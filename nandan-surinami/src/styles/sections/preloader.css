@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Preloader
+   ========================================================================== */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+.preloader__panel {
+  position: absolute;
+  inset: 0;
+}
+.preloader__panel--saffron {
+  background: var(--saffron);
+}
+.preloader__panel--red {
+  background: var(--chili);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.preloader__burst {
+  position: absolute;
+  width: min(140vmax, 1600px);
+  color: rgba(250, 190, 96, 0.22);
+}
+.preloader__logo {
+  position: relative;
+  width: clamp(140px, 18vw, 220px);
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.25));
+}
+.preloader__meta {
+  position: absolute;
+  left: max(var(--gutter), var(--safe-left));
+  right: max(var(--gutter), var(--safe-right));
+  bottom: calc(clamp(20px, 4vh, 40px) + var(--safe-bottom));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  color: var(--paper);
+}
+.preloader__tagwrap {
+  overflow: hidden;
+  display: block;
+}
+.preloader__tag {
+  display: block;
+  font-family: var(--f-script);
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+}
+.preloader__count {
+  font-family: var(--f-display);
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.8;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.footer {
+  position: relative;
+  background: var(--chili);
+  color: var(--paper);
+  padding-top: clamp(56px, 10vh, 110px);
+  overflow: hidden;
+  border-radius: 32px 32px 0 0;
+}
+.footer__burst {
+  position: absolute;
+  width: 1200px;
+  left: 50%;
+  bottom: -620px;
+  translate: -50% 0;
+  color: rgba(250, 190, 96, 0.14);
+}
+.footer__top {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 24px;
+  align-items: start;
+}
+.footer__logo {
+  grid-column: 1 / -1;
+  width: 76px;
+  height: auto;
+}
+.footer__claim {
+  grid-column: 1 / -1;
+  font-size: 1.1rem;
+  max-width: 18em;
+}
+.footer__links {
+  display: grid;
+  gap: 0;
+}
+/* Phones: 44px+ tall rows; the hover underline is desktop-only. */
+.footer__links a {
+  display: inline-block;
+  padding: 9px 0;
+  text-decoration: none;
+  font-weight: 700;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 7px) / 0% 2px no-repeat;
+  transition: background-size 0.4s var(--ease-out), opacity 0.2s;
+}
+.footer__links a:active {
+  opacity: 0.7;
+}
+.footer__word {
+  position: relative;
+  font-family: var(--f-script);
+  /* never wider than the screen: ~5.6em wide, so 16vw leaves a margin */
+  font-size: clamp(3rem, 16vw, 18rem);
+  line-height: 1.15;
+  text-align: center;
+  color: var(--saffron-light);
+  margin-top: clamp(24px, 6vh, 60px);
+  white-space: nowrap;
+}
+.footer__bottom {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding-top: 14px;
+  padding-bottom: calc(18px + var(--safe-bottom));
+  border-top: 1px solid rgba(255, 249, 238, 0.2);
+  font-size: 0.9rem;
+}
+.footer__top-btn {
+  min-height: var(--tap);
+  border: 0;
+  background: none;
+  font-weight: 700;
+  padding: 0;
+}
+.footer__top-btn:active {
+  opacity: 0.7;
+}
+
+@media (min-width: 600px) {
+  .footer {
+    border-radius: 48px 48px 0 0;
+  }
+  .footer__top {
+    gap: 40px;
+  }
+  .footer__logo {
+    width: 90px;
+  }
+  .footer__claim {
+    font-size: 1.15rem;
+  }
+  .footer__bottom {
+    padding-top: 20px;
+    padding-bottom: calc(28px + var(--safe-bottom));
+  }
+}
+
+@media (min-width: 900px) {
+  .footer__top {
+    grid-template-columns: auto 1fr;
+  }
+  .footer__logo,
+  .footer__claim {
+    grid-column: auto;
+  }
+  .footer__word {
+    font-size: clamp(4.4rem, 17vw, 18rem);
+    margin-top: clamp(30px, 6vh, 60px);
+  }
+  .footer__bottom {
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .footer__top {
+    grid-template-columns: auto 1.2fr 1fr 1fr;
+  }
+}
+
+/* Compact desktop link list (mouse only; touch tablets keep 44px rows). */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  .footer__links {
+    gap: 8px;
+  }
+  .footer__links a {
+    display: inline;
+    padding: 0 0 2px;
+    background-position: 0 100%;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer__links a:hover {
+    background-size: 100% 2px;
+  }
+}
