@@ -2,11 +2,13 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
 import { dishes } from '../data/content';
 import RevealTitle from '../components/RevealTitle';
+import SwipeDots from '../components/SwipeDots';
 
 const fan = [-5, 4, -2.5, 6];
 
 export default function Dishes() {
   const root = useRef(null);
+  const deckRef = useRef(null);
 
   useGSAP(
     () => {
@@ -69,7 +71,7 @@ export default function Dishes() {
           </div>
         </div>
 
-        <div className="dishes__deck">
+        <div className="dishes__deck" ref={deckRef}>
           {dishes.map((d, i) => (
             <figure className="dcard" key={d.title} style={{ zIndex: dishes.length - i }}>
               <img src={d.img} alt={`${d.title}, gemaakt met ${d.product}`} loading="lazy" width="1100" height="1100" />
@@ -79,6 +81,8 @@ export default function Dishes() {
           <span className="dishes__steam dishes__steam--1" aria-hidden="true" />
           <span className="dishes__steam dishes__steam--2" aria-hidden="true" />
         </div>
+        {/* Phones/tablets (<900px): counter + dots for the native swipe row. */}
+        <SwipeDots trackRef={deckRef} itemSelector=".dcard" labels={dishes.map((d) => d.title)} className="dishes__dots" label="Gerechten" counter />
       </div>
     </section>
   );

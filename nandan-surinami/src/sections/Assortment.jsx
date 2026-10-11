@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { gsap, Flip, ScrollTrigger, useGSAP } from '../lib/gsap';
+import { gsap, Flip, ScrollTrigger, useGSAP, motionScale } from '../lib/gsap';
+import { matches, MQ } from '../lib/media';
 import { boemboes, products } from '../data/content';
 import TiltedCard from '../components/reactbits/TiltedCard';
 import RevealTitle from '../components/RevealTitle';
@@ -28,13 +29,15 @@ export default function Assortment({ onRecipe }) {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.from('.filters', { y: 30, autoAlpha: 0, duration: 0.9, scrollTrigger: { trigger: '.filters', start: 'top 90%', once: true } });
-        gsap.set('.pcard', { y: 100, autoAlpha: 0 });
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { d, t } = motionScale(conditions.small);
+        gsap.from('.filters', { y: d(30), autoAlpha: 0, duration: t(0.9), scrollTrigger: { trigger: '.filters', start: 'top 90%', once: true } });
+        gsap.set('.pcard', { y: d(100), autoAlpha: 0 });
         ScrollTrigger.batch('.pcard', {
           start: 'top 92%',
           once: true,
-          onEnter: (els) => gsap.to(els, { y: 0, autoAlpha: 1, stagger: 0.08, duration: 1, overwrite: true }),
+          onEnter: (els) => gsap.to(els, { y: 0, autoAlpha: 1, stagger: conditions.small ? 0.06 : 0.08, duration: t(1), overwrite: true }),
         });
       });
     },
@@ -61,7 +64,18 @@ export default function Assortment({ onRecipe }) {
     { scope: root, dependencies: [filter] }
   );
 
-  const choose = (id) => {
+  // Phones: the filter bar is a horizontal scroll row; keep the chosen pill fully in view.
+  const revealPill = (btn) => {
+    const row = btn?.parentElement;
+    if (!row || row.scrollWidth <= row.clientWidth + 1) return;
+    const r = btn.getBoundingClientRect();
+    const box = row.getBoundingClientRect();
+    const left = row.scrollLeft + (r.left + r.width / 2) - (box.left + box.width / 2);
+    row.scrollTo({ left, behavior: matches(MQ.reduced) ? 'auto' : 'smooth' });
+  };
+
+  const choose = (id, e) => {
+    revealPill(e?.currentTarget);
     if (id === filter) return;
     const cards = root.current.querySelectorAll('.pcard');
     // Cards not yet revealed by the scroll batch should take part in the Flip fully visible.
@@ -84,10 +98,11 @@ export default function Assortment({ onRecipe }) {
           {filters.map((f) => (
             <button
               key={f.id}
+              type="button"
               role="tab"
               aria-selected={filter === f.id}
               className={`filter${filter === f.id ? ' is-active' : ''}`}
-              onClick={() => choose(f.id)}
+              onClick={(e) => choose(f.id, e)}
             >
               {f.label} <sup>{counts[f.id]}</sup>
             </button>

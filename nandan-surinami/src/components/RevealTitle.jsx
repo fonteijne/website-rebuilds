@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { gsap, SplitText, useGSAP } from '../lib/gsap';
+import { gsap, SplitText, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 
 // Masked line-by-line reveal for section headings (GSAP SplitText + autoSplit).
 export default function RevealTitle({ as: Tag = 'h2', className = '', children, scrub = false, ...rest }) {
@@ -8,7 +9,9 @@ export default function RevealTitle({ as: Tag = 'h2', className = '', children, 
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { t } = motionScale(conditions.small);
         SplitText.create(ref.current, {
           type: 'lines, words',
           mask: 'lines',
@@ -17,9 +20,9 @@ export default function RevealTitle({ as: Tag = 'h2', className = '', children, 
           onSplit: (self) =>
             gsap.from(self.words, {
               yPercent: 115,
-              rotate: 3,
-              stagger: 0.06,
-              duration: 1.1,
+              rotate: conditions.small ? 2 : 3,
+              stagger: conditions.small ? 0.045 : 0.06,
+              duration: t(1.1),
               ease: 'pour',
               scrollTrigger: scrub
                 ? { trigger: ref.current, start: 'top 90%', end: 'top 45%', scrub: 1 }

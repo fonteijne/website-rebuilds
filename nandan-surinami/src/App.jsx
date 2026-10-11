@@ -17,11 +17,15 @@ import Video from './sections/Video';
 import Contact from './sections/Contact';
 import Footer from './sections/Footer';
 import RecipeModal from './sections/RecipeModal';
+import { useMediaQuery, MQ_RICH } from './lib/media';
 
 export default function App() {
   const [ready, setReady] = useState(false);
   const [recipe, setRecipe] = useState(null);
   const [subject, setSubject] = useState('');
+  // Mobile-first: the animated grain and click sparks are desktop (mouse + wide screen) extras.
+  // Phones skip both canvases entirely, so no extra layers or RAF loops on touch.
+  const rich = useMediaQuery(MQ_RICH);
 
   const onLoaded = useCallback(() => {
     setReady(true);
@@ -31,7 +35,7 @@ export default function App() {
 
   return (
     <SmoothScroll>
-      <ClickSpark sparkColor="#E8A33C" sparkSize={9} sparkRadius={22} sparkCount={9} duration={500}>
+      <ClickSpark disabled={!rich} sparkColor="#E8A33C" sparkSize={9} sparkRadius={22} sparkCount={9} duration={500}>
         <Preloader onDone={onLoaded} />
         <Nav ready={ready} />
         <main id="top">
@@ -48,7 +52,7 @@ export default function App() {
         </main>
         <Footer />
         <RecipeModal recipe={recipe} onClose={() => setRecipe(null)} />
-        <Noise fixed opacity={0.05} fps={12} zIndex={90} />
+        {rich && <Noise fixed opacity={0.05} fps={12} zIndex={90} />}
       </ClickSpark>
     </SmoothScroll>
   );

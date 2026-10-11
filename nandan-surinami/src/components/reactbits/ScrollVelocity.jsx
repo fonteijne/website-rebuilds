@@ -8,7 +8,8 @@ import {
   useTransform,
   useMotionValue,
   useVelocity,
-  useAnimationFrame
+  useAnimationFrame,
+  useInView
 } from 'motion/react';
 import './ScrollVelocity.css';
 
@@ -87,7 +88,11 @@ export const ScrollVelocity = ({
     });
 
     const directionFactor = useRef(1);
+    // Adapted: skip the per-frame work while the band is off-screen.
+    const bandRef = useRef(null);
+    const inView = useInView(bandRef, { margin: '100px 0px' });
     useAnimationFrame((t, delta) => {
+      if (!inView) return;
       let moveBy = directionFactor.current * baseVelocity * (delta / 1000);
 
       if (velocityFactor.get() < 0) {
@@ -110,7 +115,7 @@ export const ScrollVelocity = ({
     }
 
     return (
-      <div className={parallaxClassName} style={parallaxStyle}>
+      <div className={parallaxClassName} style={parallaxStyle} ref={bandRef}>
         <motion.div className={scrollerClassName} style={{ x, ...scrollerStyle }}>
           {spans}
         </motion.div>

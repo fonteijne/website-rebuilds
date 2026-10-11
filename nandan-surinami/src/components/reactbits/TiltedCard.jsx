@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
+import { useFinePointer } from '../../lib/media';
 import './TiltedCard.css';
 
 const springValues = {
@@ -10,7 +11,41 @@ const springValues = {
   mass: 2
 };
 
-export default function TiltedCard({
+// Adapted: the tilt is a hover effect, so touch / coarse pointers get a plain image with the same
+// markup (no springs, no pointer handlers). The interactive version only mounts for a fine pointer.
+export default function TiltedCard(props) {
+  const finePointer = useFinePointer();
+  return finePointer ? <InteractiveTiltedCard {...props} /> : <StaticTiltedCard {...props} />;
+}
+
+function StaticTiltedCard({
+  imageSrc,
+  altText = 'Tilted card image',
+  containerHeight = '300px',
+  containerWidth = '100%',
+  imageHeight = '300px',
+  imageWidth = '300px',
+  overlayContent = null,
+  displayOverlayContent = false
+}) {
+  return (
+    <figure className="tilted-card-figure" style={{ height: containerHeight, width: containerWidth }}>
+      <div className="tilted-card-inner" style={{ width: imageWidth, height: imageHeight }}>
+        <img
+          src={imageSrc}
+          alt={altText}
+          className="tilted-card-img"
+          loading="lazy"
+          decoding="async"
+          style={{ width: imageWidth, height: imageHeight }}
+        />
+        {displayOverlayContent && overlayContent && <div className="tilted-card-overlay">{overlayContent}</div>}
+      </div>
+    </figure>
+  );
+}
+
+function InteractiveTiltedCard({
   imageSrc,
   altText = 'Tilted card image',
   captionText = '',

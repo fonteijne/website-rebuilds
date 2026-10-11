@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { youtubeId } from '../data/content';
 import Magnet from '../components/reactbits/Magnet';
 import CircularText from '../components/reactbits/CircularText';
@@ -12,18 +13,22 @@ export default function Video() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.fromTo('.video__frame', { scale: 0.82, borderRadius: '64px' }, {
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        // Phones: a gentler scale and no animated border-radius (which repaints every frame).
+        gsap.fromTo('.video__frame', conditions.small ? { scale: 0.92 } : { scale: 0.82, borderRadius: '64px' }, {
           scale: 1,
-          borderRadius: '28px',
+          ...(conditions.small ? {} : { borderRadius: '28px' }),
           ease: 'none',
           scrollTrigger: { trigger: '.video__frame', start: 'top bottom', end: 'center center', scrub: true },
         });
-        gsap.fromTo('.video__poster', { scale: 1.2 }, {
-          scale: 1,
-          ease: 'none',
-          scrollTrigger: { trigger: '.video__frame', start: 'top bottom', end: 'bottom top', scrub: true },
-        });
+        if (!conditions.small) {
+          gsap.fromTo('.video__poster', { scale: 1.2 }, {
+            scale: 1,
+            ease: 'none',
+            scrollTrigger: { trigger: '.video__frame', start: 'top bottom', end: 'bottom top', scrub: true },
+          });
+        }
       });
     },
     { scope: root }

@@ -3,9 +3,13 @@ import { gsap, useGSAP } from '../lib/gsap';
 import { scrollToId } from '../lib/scroll';
 import { boemboes } from '../data/content';
 import RevealTitle from '../components/RevealTitle';
+import SwipeDots from '../components/SwipeDots';
+
+const dotLabels = [...boemboes.map((b) => `Boemboe ${b.name}`), 'Meer smaken'];
 
 export default function Boemboe({ onRecipe }) {
   const root = useRef(null);
+  const trackRef = useRef(null);
 
   useGSAP(
     () => {
@@ -81,7 +85,7 @@ export default function Boemboe({ onRecipe }) {
       </div>
 
       <div className="boemboe__pin">
-        <div className="boemboe__track">
+        <div className="boemboe__track" ref={trackRef}>
           {boemboes.map((b, i) => (
             <article className="bpanel" key={b.id} style={{ '--accent': b.accent }}>
               <div className="bpanel__visual">
@@ -100,7 +104,7 @@ export default function Boemboe({ onRecipe }) {
                   <li>Ca. 30 min</li>
                 </ul>
                 <p className="bpanel__for">{b.for}</p>
-                <button className="btn btn--dark" onClick={() => onRecipe(b)}>
+                <button type="button" className="btn btn--dark bpanel__cta" onClick={() => onRecipe(b)} aria-label={`Bereidingswijze ${b.name}`}>
                   Bereidingswijze
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                 </button>
@@ -116,6 +120,8 @@ export default function Boemboe({ onRecipe }) {
           </div>
         </div>
         <div className="boemboe__progress" aria-hidden="true"><span className="boemboe__bar" /></div>
+        {/* Phones/tablets (<900px): pager for the native swipe row. Hidden by CSS on desktop. */}
+        <SwipeDots trackRef={trackRef} itemSelector=".bpanel" labels={dotLabels} className="boemboe__dots" label="Boemboe smaken" />
       </div>
     </section>
   );

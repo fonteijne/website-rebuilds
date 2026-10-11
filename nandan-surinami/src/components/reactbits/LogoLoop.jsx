@@ -58,7 +58,7 @@ const useImageLoader = (seqRef, onLoad, dependencies) => {
   }, [onLoad, seqRef, dependencies]);
 };
 
-const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical) => {
+const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, paused) => {
   const rafRef = useRef(null);
   const lastTimestampRef = useRef(null);
   const offsetRef = useRef(0);
@@ -77,6 +77,9 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
         : `translate3d(${-offsetRef.current}px, 0, 0)`;
       track.style.transform = transformValue;
     }
+
+    // Adapted: no RAF loop while the strip is off-screen (saves battery on phones).
+    if (paused) return undefined;
 
     const animate = timestamp => {
       if (lastTimestampRef.current === null) {
@@ -114,7 +117,7 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
       }
       lastTimestampRef.current = null;
     };
-  }, [targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, trackRef]);
+  }, [targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, trackRef, paused]);
 };
 
 export const LogoLoop = memo(
@@ -143,6 +146,15 @@ export const LogoLoop = memo(
     const [seqHeight, setSeqHeight] = useState(0);
     const [copyCount, setCopyCount] = useState(ANIMATION_CONFIG.MIN_COPIES);
     const [isHovered, setIsHovered] = useState(false);
+    const [inView, setInView] = useState(true);
+
+    useEffect(() => {
+      const el = containerRef.current;
+      if (!el || !window.IntersectionObserver) return undefined;
+      const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: '100px 0px' });
+      io.observe(el);
+      return () => io.disconnect();
+    }, []);
 
     const effectiveHoverSpeed = useMemo(() => {
       if (hoverSpeed !== undefined) return hoverSpeed;
@@ -194,7 +206,7 @@ export const LogoLoop = memo(
 
     useImageLoader(seqRef, updateDimensions, [logos, gap, logoHeight, isVertical]);
 
-    useAnimationLoop(trackRef, targetVelocity, seqWidth, seqHeight, isHovered, effectiveHoverSpeed, isVertical);
+    useAnimationLoop(trackRef, targetVelocity, seqWidth, seqHeight, isHovered, effectiveHoverSpeed, isVertical, !inView);
 
     const cssVariables = useMemo(
       () => ({

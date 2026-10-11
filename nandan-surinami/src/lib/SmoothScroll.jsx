@@ -35,7 +35,13 @@ export default function SmoothScroll({ children }) {
 
   return (
     <>
-      <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.1, anchors: false }} />
+      {/* Mobile-first: only wheel input is smoothed. syncTouch stays false (the Lenis default), so
+          phones keep native touch scrolling with native momentum; Lenis just reports the position. */}
+      <ReactLenis
+        root
+        ref={lenisRef}
+        options={{ autoRaf: false, lerp: 0.1, anchors: false, smoothWheel: true, syncTouch: false }}
+      />
       {children}
     </>
   );

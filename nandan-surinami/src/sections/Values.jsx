@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap';
+import { gsap, ScrollTrigger, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { values } from '../data/content';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import RevealTitle from '../components/RevealTitle';
@@ -10,18 +11,20 @@ export default function Values() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.set('.value', { y: 80, autoAlpha: 0, rotate: (i) => [-3, 2, -2][i] });
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { d, t } = motionScale(conditions.small);
+        gsap.set('.value', { y: d(80), autoAlpha: 0, rotate: (i) => [-3, 2, -2][i] * (conditions.small ? 0.6 : 1) });
         ScrollTrigger.batch('.value', {
           start: 'top 88%',
           once: true,
-          onEnter: (els) => gsap.to(els, { y: 0, autoAlpha: 1, rotate: 0, stagger: 0.12, duration: 1.1, ease: 'pop' }),
+          onEnter: (els) => gsap.to(els, { y: 0, autoAlpha: 1, rotate: 0, stagger: 0.12, duration: t(1.1), ease: 'pop' }),
         });
         gsap.from('.value__icon', {
           scale: 0,
           rotate: -45,
           stagger: 0.12,
-          duration: 1,
+          duration: t(1),
           ease: 'pop',
           scrollTrigger: { trigger: '.values__grid', start: 'top 80%', once: true },
         });

@@ -10,15 +10,16 @@ const ClickSpark = ({
   duration = 400,
   easing = 'ease-out',
   extraScale = 1.0,
+  // Adapted: touch / small screens pass disabled — no canvas, no listeners, children only.
+  disabled = false,
   children
 }) => {
   const canvasRef = useRef(null);
   const sparksRef = useRef([]);
-  const startTimeRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || disabled) return;
 
     // Adapted: the canvas is viewport-fixed instead of covering the whole
     // (very tall) page, which keeps the backing store small.
@@ -47,7 +48,7 @@ const ClickSpark = ({
       ro.disconnect();
       clearTimeout(resizeTimeout);
     };
-  }, []);
+  }, [disabled]);
 
   const easeFunc = useCallback(
     t => {
@@ -65,16 +66,17 @@ const ClickSpark = ({
     [easing]
   );
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+  // Adapted: the draw loop only runs while sparks are alive. A click starts it and it stops
+  // itself (after clearing the canvas) once the last spark has faded, so an idle page costs nothing.
+  const rafRef = useRef(0);
 
-    let animationId;
-
-    const draw = timestamp => {
-      if (!startTimeRef.current) {
-        startTimeRef.current = timestamp;
+  const draw = useCallback(
+    timestamp => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!ctx) {
+        rafRef.current = 0;
+        return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -84,7 +86,7 @@ const ClickSpark = ({
           return false;
         }
 
-        const progress = elapsed / duration;
+        const progress = Math.max(0, elapsed) / duration;
         const eased = easeFunc(progress);
 
         const distance = eased * sparkRadius * extraScale;
@@ -105,17 +107,22 @@ const ClickSpark = ({
         return true;
       });
 
-      animationId = requestAnimationFrame(draw);
-    };
+      rafRef.current = sparksRef.current.length ? requestAnimationFrame(draw) : 0;
+    },
+    [sparkColor, sparkSize, sparkRadius, duration, easeFunc, extraScale]
+  );
 
-    animationId = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, [sparkColor, sparkSize, sparkRadius, sparkCount, duration, easeFunc, extraScale]);
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+      sparksRef.current = [];
+    },
+    [draw, disabled]
+  );
 
   const handleClick = e => {
+    if (disabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -131,6 +138,7 @@ const ClickSpark = ({
     }));
 
     sparksRef.current.push(...newSparks);
+    if (!rafRef.current) rafRef.current = requestAnimationFrame(draw);
   };
 
   return (
@@ -140,21 +148,23 @@ const ClickSpark = ({
         width: '100%',
         height: '100%'
       }}
-      onClick={handleClick}
+      onClick={disabled ? undefined : handleClick}
     >
-      <canvas
-        ref={canvasRef}
-        style={{
-          display: 'block',
-          userSelect: 'none',
-          position: 'fixed',
-          inset: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 95,
-          pointerEvents: 'none'
-        }}
-      />
+      {!disabled && (
+        <canvas
+          ref={canvasRef}
+          style={{
+            display: 'block',
+            userSelect: 'none',
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 95,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
       {children}
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useFinePointer } from '../../lib/media';
 
 const Magnet = ({
   children,
@@ -16,9 +17,14 @@ const Magnet = ({
   const [isActive, setIsActive] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const magnetRef = useRef(null);
+  // Adapted: a magnet needs a hovering pointer. On touch / coarse pointers it passes children through
+  // (same wrapper markup, no transform, no window listener).
+  const finePointer = useFinePointer();
+  const off = disabled || !finePointer;
 
   useEffect(() => {
-    if (disabled) {
+    if (off) {
+      setIsActive(false);
       setPosition({ x: 0, y: 0 });
       return;
     }
@@ -49,7 +55,7 @@ const Magnet = ({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [padding, disabled, magnetStrength]);
+  }, [padding, off, magnetStrength]);
 
   const transitionStyle = isActive ? activeTransition : inactiveTransition;
 
@@ -62,11 +68,15 @@ const Magnet = ({
     >
       <div
         className={innerClassName}
-        style={{
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-          transition: transitionStyle,
-          willChange: 'transform'
-        }}
+        style={
+          off
+            ? undefined
+            : {
+                transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+                transition: transitionStyle,
+                willChange: 'transform'
+              }
+        }
       >
         {children}
       </div>

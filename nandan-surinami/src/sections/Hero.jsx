@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { gsap, SplitText, useGSAP } from '../lib/gsap';
+import { gsap, SplitText, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { scrollToId } from '../lib/scroll';
 import Sunburst from '../components/Sunburst';
 import RotatingText from '../components/reactbits/RotatingText';
@@ -22,8 +23,10 @@ export default function Hero({ ready }) {
 
       mm.add(
         {
-          motion: '(prefers-reduced-motion: no-preference)',
-          desktop: '(min-width: 900px)',
+          motion: MQ.motion,
+          desktop: MQ.desktop,
+          small: MQ.small,
+          fine: MQ.finePointer,
         },
         ({ conditions }) => {
           if (!conditions.motion) return;
@@ -36,27 +39,38 @@ export default function Hero({ ready }) {
 
           const split = SplitText.create('.hero__line', { type: 'chars', mask: 'chars', charsClass: 'hero__char' });
 
+          // Phones get shorter travel and slightly faster tweens (mobile-first values, see motionScale).
+          const { d, t } = motionScale(conditions.small);
+
           gsap
             .timeline({ defaults: { ease: 'pour' } })
             .set(['.hero__title', '.hero__sub', '.hero__ctas', '.hero__badge', '.hero__eyebrow'], { autoAlpha: 1 })
-            .from('.sunburst__ray', { scale: 0, opacity: 0, transformOrigin: '50% 50%', stagger: { each: 0.015, from: 'center' }, duration: 1.2 }, 0)
-            .from('.hero__eyebrow', { y: 20, autoAlpha: 0, duration: 0.8 }, 0.1)
-            .from(split.chars, { yPercent: 110, rotate: 8, stagger: 0.035, duration: 1.1 }, 0.15)
-            .from('.hero__sub', { y: 30, autoAlpha: 0, duration: 0.9 }, 0.7)
-            .from('.hero__ctas > *', { y: 30, autoAlpha: 0, stagger: 0.1, duration: 0.9 }, 0.85)
-            .fromTo('.hero__pack', { autoAlpha: 0, y: 260, rotate: (i) => (i % 2 ? 40 : -40), scale: 0.6 }, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, ease: 'pop', stagger: 0.09, duration: 1.2 }, 0.45)
-            .from('.hero__badge', { scale: 0, rotate: -90, duration: 1, ease: 'pop' }, 1);
+            .from('.sunburst__ray', { scale: 0, opacity: 0, transformOrigin: '50% 50%', stagger: { each: 0.015, from: 'center' }, duration: t(1.2) }, 0)
+            .from('.hero__eyebrow', { y: d(20), autoAlpha: 0, duration: t(0.8) }, 0.1)
+            .from(split.chars, { yPercent: 110, rotate: conditions.small ? 5 : 8, stagger: conditions.small ? 0.028 : 0.035, duration: t(1.1) }, 0.15)
+            .from('.hero__sub', { y: d(30), autoAlpha: 0, duration: t(0.9) }, 0.7)
+            .from('.hero__ctas > *', { y: d(30), autoAlpha: 0, stagger: 0.1, duration: t(0.9) }, 0.85)
+            .fromTo('.hero__pack', { autoAlpha: 0, y: d(260), rotate: (i) => (i % 2 ? 1 : -1) * (conditions.small ? 24 : 40), scale: 0.6 }, { autoAlpha: 1, y: 0, rotate: 0, scale: 1, ease: 'pop', stagger: 0.09, duration: t(1.2) }, 0.45)
+            .from('.hero__badge', { scale: 0, rotate: -90, duration: t(1), ease: 'pop' }, 1);
 
-          gsap.to('.hero__burst', { rotate: 360, duration: 90, repeat: -1, ease: 'none' });
+          // The endless burst spin only runs while the hero is on screen.
+          gsap.to('.hero__burst', {
+            rotate: 360,
+            duration: 90,
+            repeat: -1,
+            ease: 'none',
+            scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' },
+          });
 
           // Scroll: packs drift at different speeds, title lifts, media unfolds.
+          // One ScrollTrigger drives all packs (instead of one per pack). Below 600px the packs only
+          // drift vertically: no per-pack rotate scrubs, so fewer properties are updated per frame.
+          const drift = gsap.timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true },
+          });
           gsap.utils.toArray('.hero__pack-inner').forEach((el, i) => {
-            gsap.to(el, {
-              yPercent: -60 * packs[i].depth,
-              rotate: i % 2 ? 18 : -18,
-              ease: 'none',
-              scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true },
-            });
+            drift.to(el, conditions.small ? { yPercent: -45 * packs[i].depth } : { yPercent: -60 * packs[i].depth, rotate: i % 2 ? 18 : -18 }, 0);
           });
           gsap.to('.hero__copy', {
             yPercent: -25,
@@ -64,23 +78,31 @@ export default function Hero({ ready }) {
             ease: 'none',
             scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom 30%', scrub: true },
           });
+          // A scrubbed clip-path repaints the photo every frame; phones play the unfold once instead.
           gsap.fromTo(
             '.hero__media',
             { clipPath: conditions.desktop ? 'inset(0% 10% 0% 10% round 48px)' : 'inset(0% 4% 0% 4% round 28px)' },
-            {
-              clipPath: 'inset(0% 0% 0% 0% round 0px)',
-              ease: 'none',
-              scrollTrigger: { trigger: '.hero__media', start: 'top 95%', end: 'top 15%', scrub: true },
-            }
+            conditions.small
+              ? { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 1, ease: 'power2.inOut', scrollTrigger: { trigger: '.hero__media', start: 'top 70%', once: true } }
+              : {
+                  clipPath: 'inset(0% 0% 0% 0% round 0px)',
+                  ease: 'none',
+                  scrollTrigger: { trigger: '.hero__media', start: 'top 95%', end: 'top 15%', scrub: true },
+                }
           );
           gsap.fromTo(
             '.hero__media img',
-            { scale: 1.25, yPercent: -6 },
-            { scale: 1, yPercent: 6, ease: 'none', scrollTrigger: { trigger: '.hero__media', start: 'top bottom', end: 'bottom top', scrub: true } }
+            conditions.small ? { scale: 1.12, yPercent: -3 } : { scale: 1.25, yPercent: -6 },
+            {
+              scale: 1,
+              yPercent: conditions.small ? 3 : 6,
+              ease: 'none',
+              scrollTrigger: { trigger: '.hero__media', start: 'top bottom', end: 'bottom top', scrub: true },
+            }
           );
 
-          // Mouse parallax on the floating packs (quickTo per gsap-performance).
-          if (conditions.desktop) {
+          // Mouse parallax on the floating packs (quickTo per gsap-performance). Desktop + real mouse only.
+          if (conditions.desktop && conditions.fine) {
             const movers = gsap.utils.toArray('.hero__pack-mouse').map((el, i) => ({
               x: gsap.quickTo(el, 'x', { duration: 0.9, ease: 'power3' }),
               y: gsap.quickTo(el, 'y', { duration: 0.9, ease: 'power3' }),

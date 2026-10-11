@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { socials, linktree } from '../data/content';
 import RevealTitle from '../components/RevealTitle';
 
@@ -20,19 +21,21 @@ export default function Contact({ subject, setSubject }) {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { d, t } = motionScale(conditions.small);
         gsap.from('.social', {
           yPercent: 100,
           autoAlpha: 0,
           stagger: 0.1,
-          duration: 1,
+          duration: t(1),
           scrollTrigger: { trigger: '.socials', start: 'top 88%', once: true },
         });
         gsap.from('.field', {
-          y: 40,
+          y: d(40),
           autoAlpha: 0,
           stagger: 0.07,
-          duration: 0.9,
+          duration: t(0.9),
           scrollTrigger: { trigger: '.form', start: 'top 85%', once: true },
         });
       });

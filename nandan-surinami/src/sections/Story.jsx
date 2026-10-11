@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { values } from '../data/content';
 import ScrollReveal from '../components/reactbits/ScrollReveal';
 import CountUp from '../components/reactbits/CountUp';
@@ -18,15 +19,18 @@ export default function Story() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { d, t } = motionScale(conditions.small);
         gsap.fromTo(
           '.story__photo',
           { clipPath: 'inset(100% 0% 0% 0% round 28px)' },
-          { clipPath: 'inset(0% 0% 0% 0% round 28px)', duration: 1.6, ease: 'expo.inOut', scrollTrigger: { trigger: '.story__photo', start: 'top 85%', once: true } }
+          { clipPath: 'inset(0% 0% 0% 0% round 28px)', duration: t(1.6), ease: 'expo.inOut', scrollTrigger: { trigger: '.story__photo', start: 'top 85%', once: true } }
         );
-        gsap.fromTo('.story__photo img', { scale: 1.35, yPercent: -8 }, {
-          scale: 1.05,
-          yPercent: 8,
+        // Phones: lighter photo parallax (less overscan, smaller travel).
+        gsap.fromTo('.story__photo img', conditions.small ? { scale: 1.15, yPercent: -4 } : { scale: 1.35, yPercent: -8 }, {
+          scale: conditions.small ? 1.02 : 1.05,
+          yPercent: conditions.small ? 4 : 8,
           ease: 'none',
           scrollTrigger: { trigger: '.story__photo', start: 'top bottom', end: 'bottom top', scrub: true },
         });
@@ -36,10 +40,10 @@ export default function Story() {
           scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: true },
         });
         gsap.from('.stat', {
-          y: 50,
+          y: d(50),
           autoAlpha: 0,
           stagger: 0.1,
-          duration: 1,
+          duration: t(1),
           scrollTrigger: { trigger: '.story__stats', start: 'top 88%', once: true },
         });
         gsap.fromTo('.story__underline path', { drawSVG: '0%' }, {

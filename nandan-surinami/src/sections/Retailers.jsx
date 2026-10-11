@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, useGSAP, motionScale } from '../lib/gsap';
+import { MQ } from '../lib/media';
 import { scrollToId } from '../lib/scroll';
 import { retailers } from '../data/content';
 import LogoLoop from '../components/reactbits/LogoLoop';
@@ -12,12 +13,14 @@ export default function Retailers({ onAsk }) {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add({ motion: MQ.motion, small: MQ.small }, ({ conditions }) => {
+        if (!conditions.motion) return;
+        const { d, t } = motionScale(conditions.small);
         gsap.from('.retailers__ask', {
-          y: 60,
-          rotate: 4,
+          y: d(60),
+          rotate: conditions.small ? 2 : 4,
           autoAlpha: 0,
-          duration: 1.1,
+          duration: t(1.1),
           ease: 'pop',
           scrollTrigger: { trigger: '.retailers__ask', start: 'top 90%', once: true },
         });
