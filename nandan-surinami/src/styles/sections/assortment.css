@@ -23,11 +23,18 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  background: rgba(255, 249, 238, 0.85);
+  background: rgba(255, 249, 238, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 16px 40px -20px rgba(90, 40, 10, 0.45), inset 0 0 0 1px var(--line);
   margin-bottom: clamp(24px, 5vh, 48px);
+}
+/* Landscape phones: a sticky bar would eat a third of the ~390px viewport. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .filters {
+    position: relative;
+    top: auto;
+  }
 }
 .filters::-webkit-scrollbar {
   display: none;

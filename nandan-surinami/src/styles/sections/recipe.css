@@ -30,13 +30,20 @@
   display: grid;
   grid-template-columns: 1fr;
 }
+/* Phones/tablets: the close button sticks to the top of the scrolling sheet (it shares the first,
+   zero-height grid row with the drag handle) so it stays reachable after scrolling the steps. */
 .recipe__close {
-  position: absolute;
-  top: 14px;
-  right: max(14px, var(--safe-right));
+  --close: 48px;
+  --close-inset: 14px;
+  position: sticky;
+  top: var(--close-inset);
+  grid-row: 1;
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin: var(--close-inset) max(var(--close-inset), var(--safe-right)) calc(-1 * (var(--close) + var(--close-inset))) 0;
   z-index: 3;
-  width: 48px;
-  height: 48px;
+  width: var(--close);
+  height: var(--close);
   border-radius: 50%;
   border: 0;
   background: var(--ink);
@@ -176,10 +183,8 @@
     border-radius: 28px 28px 0 0;
   }
   .recipe__close {
-    top: 18px;
-    right: max(18px, var(--safe-right));
-    width: 52px;
-    height: 52px;
+    --close: 52px;
+    --close-inset: 18px;
   }
   .recipe__visual {
     padding: 28px;
@@ -217,6 +222,12 @@
     border-radius: 36px 36px 0 0;
     grid-template-columns: 0.8fr 1.2fr;
   }
+  .recipe__close {
+    position: absolute;
+    top: var(--close-inset);
+    right: max(var(--close-inset), var(--safe-right));
+    margin: 0;
+  }
   .recipe__visual {
     padding: 48px 32px;
     min-height: 0;
@@ -245,6 +256,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
+  grid-row: 1;
   grid-column: 1 / -1;
   display: flex;
   justify-content: center;
@@ -262,5 +274,16 @@
 @media (min-width: 900px) {
   .recipe__handle {
     display: none;
+  }
+}
+
+/* Landscape phones: a short, compact visual so the steps start within the first screen. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 899.98px) {
+  .recipe__visual {
+    min-height: 0;
+    padding: 18px;
+  }
+  .recipe__pack {
+    width: 72px;
   }
 }

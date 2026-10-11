@@ -152,7 +152,7 @@ export default function Nav({ ready }) {
       </header>
 
       {/* Outside the header: its hide/show transform would trap a fixed overlay. */}
-      <div className="menu" id="menu" aria-hidden={!open}>
+      <div className="menu" id="menu" aria-hidden={!open} data-lenis-prevent>
         <div className="menu__bg" />
         <nav className="menu__nav" aria-label="Mobiel menu">
           {[...links, { id: 'contact', label: 'Contact' }].map((l, i) => (
