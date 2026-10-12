@@ -1,0 +1,76 @@
+import type { Module } from './types';
+
+export const roots: Module = {
+  id: 'roots',
+  num: '02',
+  title: 'Fifty-year-old ideas',
+  tagline: 'ICM goes backward before it goes forward: Unix, Make and compilers.',
+  minutes: 7,
+  cards: [
+    {
+      kind: 'idea',
+      title: 'McIlroy’s three rules',
+      body: 'Make each program do one thing well. Expect the output of every program to become the input of another. Use text streams as the universal interface. Unix did this in 1978 because memory was tiny.',
+      harness: 'Each stage = one small “program”. Its output folder = the “pipe”.',
+      src: '§2.1',
+      tags: ['unix', 'plaintext'],
+    },
+    {
+      kind: 'idea',
+      title: 'Raymond’s design rules',
+      body: 'Modularity: simple parts, clean interfaces. Transparency: design for visibility so inspection and debugging are easy. Composition: build programs to be connected to other programs.',
+      src: '§2.1',
+      tags: ['unix'],
+    },
+    {
+      kind: 'idea',
+      title: 'Pipe-and-filter',
+      body: 'Shaw and Garlan formalised it: independent components read inputs, write outputs, and connect through data streams. Any component can be replaced, inspected or tested alone.',
+      harness: 'You should be able to swap stage 02 without touching 01 or 03.',
+      src: '§2.1',
+      tags: ['pipe-filter'],
+    },
+    {
+      kind: 'idea',
+      title: 'Make: files are the coordinator',
+      body: 'Feldman’s Make (1979) defined workflows as dependency graphs between files. Files are both the artefacts and the coordination mechanism, so no separate orchestration layer is needed.',
+      src: '§2.1',
+      tags: ['make'],
+    },
+    {
+      kind: 'idea',
+      title: 'Multi-pass compilers',
+      body: 'Source passes through lexer, parser, optimiser, code generator. Each pass reads the previous intermediate representation and writes the next, with well-defined interfaces. ICM stages are passes over your content.',
+      src: '§2.1, §6.1',
+      tags: ['multipass'],
+    },
+    {
+      kind: 'idea',
+      title: 'Parnas and Dijkstra',
+      body: 'Parnas (1972): split systems by what each module hides from the rest. Dijkstra: separation of concerns, addressing one thing at a time, is the way to keep your thoughts in order.',
+      harness: 'A stage should not need to know how the previous stage did its work, only what it wrote.',
+      src: '§2.1',
+      tags: ['parnas'],
+    },
+    {
+      kind: 'idea',
+      title: 'Everything is a file',
+      body: 'Plan 9 pushed “everything is a file” to its conclusion. ICM does the same for AI workflows: state, context and instructions all live as files in a folder namespace. Gabriel’s “worse is better” backs the trade: simple things spread.',
+      src: '§3.2',
+      tags: ['plan9', 'worse-better'],
+    },
+    {
+      kind: 'quiz',
+      title: 'Spot the ancestor',
+      options: [
+        'Make: files are artefacts and coordination, no separate orchestration layer',
+        'Plan 9: use a message queue between agents',
+        'Pipe-and-filter: one big shared mutable state',
+        'Parnas: expose every module’s internals',
+      ],
+      answer: 0,
+      why: 'Make’s insight is that the filesystem already tracks what was produced and what depends on it. ICM leans on the same fact.',
+      tags: ['make'],
+    },
+  ],
+};

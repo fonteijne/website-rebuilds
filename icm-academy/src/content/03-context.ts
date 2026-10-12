@@ -1,0 +1,77 @@
+import type { Module } from './types';
+
+export const context: Module = {
+  id: 'context',
+  num: '03',
+  title: 'Context engineering',
+  tagline: 'The model only knows what is in its window. Curate the window.',
+  minutes: 7,
+  cards: [
+    {
+      kind: 'idea',
+      title: 'Prompt vs context engineering',
+      body: 'Prompt engineering suggests crafting one instruction. Context engineering (Karpathy, June 2025) is filling the window with the right instructions, knowledge, memory, tool descriptions and prior outputs, structured so the model can use them.',
+      src: '§2.2',
+      tags: ['ctx-eng'],
+    },
+    {
+      kind: 'idea',
+      title: 'Write, select, compress, isolate',
+      body: 'Lance Martin’s four strategies: write instructions, select what is relevant, compress to cut token waste, isolate unrelated context. Willison adds that prior model responses and system state are context too.',
+      harness: 'ICM leans on select and isolate, done by folder boundaries.',
+      src: '§2.2',
+      tags: ['wsci'],
+    },
+    {
+      kind: 'idea',
+      title: 'Lost in the middle',
+      body: 'Liu et al. showed models do much worse when relevant facts are buried mid-context. The more irrelevant material in the window, the worse the model handles what matters.',
+      src: '§2.2',
+      tags: ['lost-middle'],
+    },
+    {
+      kind: 'idea',
+      title: 'Prevention beats compression',
+      body: 'Prompt compression can cut tokens up to 20x with little loss, but a simpler approach is to never load the irrelevant stuff. Stage-specific loading prevents the problem instead of treating it afterwards.',
+      harness: 'Every file you don’t load is a token you don’t pay for and a distraction you avoid.',
+      src: '§2.2, §3.1',
+      tags: ['prevention'],
+    },
+    {
+      kind: 'idea',
+      title: 'ICM is not MCP',
+      body: 'MCP standardises how models reach tools and data. ICM structures and delivers context across a multi-stage workflow. They are complementary: a stage may use MCP connections while its folder decides what context comes with them.',
+      src: '§2.2',
+      tags: ['mcp'],
+    },
+    {
+      kind: 'idea',
+      title: 'Scope the tools, too',
+      body: 'Anthropic’s Jones and Kelly observed that loading all tool definitions upfront slows agents and raises cost. Stage-based architecture loads only the tools the current step needs.',
+      harness: 'List tools per stage contract, never globally.',
+      src: '§2.2',
+      tags: ['tool-scope'],
+    },
+    {
+      kind: 'demo',
+      title: 'Watch a context window fill up',
+      demo: 'ctxwindow',
+      body: 'Representative token counts from the paper’s script-to-animation workspace. Toggle between three focused ICM stages and one monolithic prompt.',
+      src: 'Fig. 3',
+      tags: ['monolithic', 'token-budget'],
+    },
+    {
+      kind: 'quiz',
+      title: 'Why scope context per stage?',
+      options: [
+        'Because models cannot read more than 1,000 tokens',
+        'To make files smaller on disk',
+        'Irrelevant context degrades performance on the material that matters',
+        'Because markdown is cheaper than JSON',
+      ],
+      answer: 2,
+      why: 'The “lost in the middle” finding: irrelevant material in the window hurts retrieval. The paper notes though that its own claim rests on that literature, not on a controlled test (§4.6).',
+      tags: ['lost-middle'],
+    },
+  ],
+};

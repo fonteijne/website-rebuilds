@@ -1,0 +1,45 @@
+import { modules, cardKey } from '../content';
+import { useStore } from '../lib/store';
+import { moduleProgress } from '../lib/progress';
+import { href } from '../lib/route';
+import CardDeck from './CardDeck';
+
+export default function ModuleView({ id }: { id: string }) {
+  const s = useStore();
+  const idx = modules.findIndex((m) => m.id === id);
+  const m = modules[idx];
+  if (!m) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <p className="text-mute">Module not found.</p>
+        <a className="btn mt-4" href={href.home}>
+          Back to the path
+        </a>
+      </div>
+    );
+  }
+  const p = moduleProgress(s, id);
+  const first = m.cards.findIndex((_, i) => !s.done[cardKey(id, i)]);
+  const nextMod = modules[idx + 1];
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <a href={href.home} className="text-sm text-mute hover:text-ink">
+        ← All modules
+      </a>
+      <header className="mt-4 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mono text-sm text-l0">Module {m.num}</div>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-5xl">{m.title}</h1>
+          <p className="mt-2 max-w-2xl text-mute">{m.tagline}</p>
+        </div>
+        <div className="mono text-sm text-mute">
+          {p.done}/{p.total} cards · {m.minutes} min
+        </div>
+      </header>
+      <div className="mt-8">
+        <CardDeck key={id} module={m} startAt={first === -1 ? 0 : first} nextModule={nextMod} />
+      </div>
+    </div>
+  );
+}
