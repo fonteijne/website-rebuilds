@@ -357,6 +357,16 @@ for k, nm in enumerate(["C5", "E5", "G5", "C6"]):
     bell(42.6 + k * 0.42, m(nm), 2.0, 0.08, pan=-0.6 + 0.4 * k)
 pad(42.5, [60, 64, 67, 71], 3.6, 0.045)
 
+# block-building ticks: the duck (11.6-13.0) and the wrong bridge (16.0-18.4)
+for k in range(14):
+    thunk(11.6 + k * 0.1, 0.09, 1.6 + 0.1 * (k % 4))
+for k in range(24):
+    thunk(16.0 + k * 0.1, 0.08, 1.4 + 0.08 * (k % 5))
+# four items pop out of the backpack (49-52)
+for k in range(4):
+    whoosh(48.85 + k, 0.3, 0.05)
+    bell(49.0 + k, m(["G5", "A5", "B5", "D6"][k]), 1.0, 0.06, pan=-0.4 + 0.27 * k)
+
 # --- S5: discovery bars 23..30 (46-62s)
 disc = [F, G, Am, C, F, G, Am, G]
 bassline(23, disc, "1 . . . 5 . . .", gain=0.13)
