@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=1920, height=1080" />
     <title>The Quest for Context</title>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
-    <script src="src/engine.js"></script>
-    <script src="src/art.js"></script>
-    <script src="src/scenes.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three.module.min.js" } }
+    </script>
     <style>
       @font-face {
         font-family: "Press Start 2P";
@@ -42,7 +42,6 @@
         top: 0;
         width: 1920px;
         height: 1080px;
-        image-rendering: pixelated;
         z-index: 10;
       }
       #vignette {
@@ -89,7 +88,7 @@
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="95" data-width="1920" data-height="1080">
-      <canvas id="px" width="640" height="360"></canvas>
+      <canvas id="px" width="1920" height="1080"></canvas>
       <div id="vignette"></div>
       <div id="flash"></div>
       <div id="black"></div>
@@ -97,229 +96,171 @@
       <div id="subtitle">The Holy Grail of AI Engineering</div>
       <audio id="soundtrack" src="assets/audio/soundtrack.mp3" data-start="0" data-duration="95" data-track-index="1" data-volume="1"></audio>
     </div>
-    <script>
-      (function () {
-        const E = window.QE, S = window.QS;
-        const TOTAL = 95, W = 1920, H = 1080;
+    <script type="module">
+      import { THREE, clamp, easeInOut, rng } from "./src3d/core.js";
+      import { buildFilm, frame } from "./src3d/film.js";
 
-        // ---------- shot list: [start, end, draw, transition-in, transition length] ----------
-        const SHOTS = [
-          [0.0, 10.0, S.s1, "cut", 0],
-          [10.0, 13.4, S.s2, "fade", 0.4],
-          [13.4, 15.2, S.s2sigh, "cut", 0],
-          [15.2, 20.8, S.s2, "cut", 0],
-          [20.8, 22.2, S.s2frown, "cut", 0],
-          [22.2, 23.6, S.s3map, "cut", 0],
-          [23.6, 25.2, S.s3mapClose, "fade", 0.3],
-          [25.2, 27.6, S.s3look, "fade", 0.4],
-          [27.6, 28.5, S.s3m1, "wipe", 0.18],
-          [28.5, 29.4, S.s3m2, "wipe", 0.18],
-          [29.4, 30.3, S.s3m3, "wipe", 0.18],
-          [30.3, 31.4, S.s3m4, "wipe", 0.18],
-          [31.4, 34.0, S.s3temple, "cut", 0],
-          [34.0, 44.6, S.s4, "cut", 0],
-          [44.6, 45.4, S.s4surprised, "cut", 0],
-          [45.4, 46.0, S.s4smile, "cut", 0],
-          [46.0, 48.6, S.s5idea, "fade", 0.3],
-          [48.6, 62.0, S.s5, "fade", 0.4],
-          [62.0, 74.6, S.s6, "cut", 0],
-          [74.6, 76.0, S.s6laugh, "cut", 0],
-          [76.0, 85.0, S.s7, "fade", 0.5],
-          [85.0, 87.0, S.s8grin, "fade", 0.4],
-          [87.0, 88.8, S.s8wink, "cut", 0],
-          [88.8, 91.0, S.s8wide, "fade", 0.3],
-          [91.0, 95.01, S.title, "cut", 0],
-        ];
+      const TOTAL = 95, W = 1920, H = 1080, RW = 960, RH = 540;
 
-        // ---------- overlays (closed-form envelopes: [peak, in, out, strength]) ----------
-        const FLASHES = [
-          [31.4, 0.3, 0.6, 1], [39.5, 0.12, 0.9, 1], [62.0, 1.4, 1.1, 1],
-          [72.85, 0.1, 0.6, 0.45], [79.05, 0.1, 0.5, 0.4], [82.6, 0.2, 0.9, 0.55],
-        ];
-        const BLACKS = [[22.2, 0.4, 0.4, 1], [34.0, 0.5, 0.5, 1], [91.0, 0.7, 0.9, 1]];
-        const env = (t, [p, i, o, s]) => (t < p - i || t > p + o ? 0 : (t <= p ? (t - (p - i)) / i : 1 - (t - p) / o) * s);
+      // ---------- overlays (closed-form envelopes: [peak, in, out, strength]) ----------
+      const FLASHES = [
+        [11.42, 0.08, 0.35, 0.35], [39.5, 0.12, 0.9, 1], [62.0, 1.4, 1.1, 1],
+        [72.85, 0.1, 0.6, 0.45], [79.15, 0.1, 0.5, 0.35], [83.1, 0.15, 0.8, 0.5],
+      ];
+      const BLACKS = [[34.0, 0.45, 0.5, 1], [91.0, 0.7, 0.9, 1]];
+      const env = (t, [p, i, o, s]) => (t < p - i || t > p + o ? 0 : (t <= p ? (t - (p - i)) / i : 1 - (t - p) / o) * s);
 
-        const px = document.getElementById("px");
-        const pctx = px.getContext("2d");
-        pctx.imageSmoothingEnabled = false;
-        const bufA = E.canvas(640, 360), bufB = E.canvas(640, 360);
+      // ---------- 3D renderer: low-res WebGL, upscaled with crisp pixels ----------
+      const glc = document.createElement("canvas");
+      const renderer = new THREE.WebGLRenderer({ canvas: glc, antialias: false, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(1);
+      renderer.setSize(RW, RH, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      const camera = new THREE.PerspectiveCamera(40, RW / RH, 0.05, 900);
+      const out = document.getElementById("px").getContext("2d");
+      out.imageSmoothingEnabled = false;
 
-        function renderShot(shot, ctx, t) {
-          ctx.setTransform(1, 0, 0, 1, 0, 0);
-          ctx.globalAlpha = 1;
-          ctx.imageSmoothingEnabled = false;
-          ctx.clearRect(0, 0, 640, 360);
-          E.use(ctx);
-          shot[2](t);
-          ctx.setTransform(1, 0, 0, 1, 0, 0);
-          ctx.globalAlpha = 1;
-        }
-        function frame(t) {
-          const act = SHOTS.filter((s) => t >= s[0] - s[4] && t < s[1]);
-          if (!act.length) return;
-          if (act.length === 1) return renderShot(act[0], pctx, t);
-          const o = act[act.length - 2], n = act[act.length - 1];
-          renderShot(o, bufA.getContext("2d"), t);
-          renderShot(n, bufB.getContext("2d"), t);
-          const p = E.clamp((t - (n[0] - n[4])) / n[4]);
-          pctx.setTransform(1, 0, 0, 1, 0, 0);
-          pctx.globalAlpha = 1;
-          pctx.drawImage(bufA, 0, 0);
-          if (n[3] === "wipe") {
-            // diagonal slice wipe from the right
-            const x = 700 - p * 820;
-            pctx.save();
-            pctx.beginPath();
-            pctx.moveTo(x + 60, 0);
-            pctx.lineTo(720, 0);
-            pctx.lineTo(720, 360);
-            pctx.lineTo(x - 60, 360);
-            pctx.closePath();
-            pctx.clip();
-            pctx.drawImage(bufB, 0, 0);
-            pctx.restore();
-            pctx.fillStyle = "#ffffff";
-            for (let y = 0; y < 360; y++) pctx.fillRect(Math.round(x + 60 - (y / 360) * 120), y, 3, 1);
-          } else {
-            pctx.globalAlpha = p;
-            pctx.drawImage(bufB, 0, 0);
-            pctx.globalAlpha = 1;
-          }
-        }
-
-        // ---------- end title: golden pixels assemble (full-res canvas) ----------
-        const cv = document.getElementById("fx");
-        const ctx = cv.getContext("2d");
-        const clamp = E.clamp;
-        let TITLE = [];
-        function buildTitle() {
-          const oc = document.createElement("canvas");
-          oc.width = W;
-          oc.height = H;
-          const o = oc.getContext("2d");
-          const pts = [];
-          function sampleText(text, top, size) {
-            o.clearRect(0, 0, W, H);
-            o.font = size + 'px "Press Start 2P"';
-            o.textBaseline = "top";
-            o.fillStyle = "#fff";
-            const cell = size / 8;
-            const w = o.measureText(text).width;
-            const x0 = Math.round((W - w) / 2 / cell) * cell;
-            o.fillText(text, x0, top);
-            const d = o.getImageData(0, 0, W, H).data;
-            for (let y = top; y < top + size * 1.2; y += cell)
-              for (let x = x0; x < x0 + w; x += cell) {
-                const i = (Math.floor(y + cell / 2) * W + Math.floor(x + cell / 2)) * 4;
-                if (d[i + 3] > 128) pts.push({ tx: x, ty: y, s: cell, kind: "text" });
-              }
-          }
-          sampleText("CONTEXT", 392, 96);
-          sampleText("ENGINEERING", 520, 96);
+      // ---------- end title: golden pixels assemble (full-res canvas) ----------
+      const cv = document.getElementById("fx");
+      const ctx = cv.getContext("2d");
+      let TITLE = [];
+      function buildTitle() {
+        const oc = document.createElement("canvas");
+        oc.width = W;
+        oc.height = H;
+        const o = oc.getContext("2d");
+        const pts = [];
+        function sampleText(text, top, size) {
           o.clearRect(0, 0, W, H);
-          const cx = 960, cy = 222, r = 104;
-          const nodes = [[cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy]];
-          o.strokeStyle = "#fff";
-          o.lineWidth = 10;
+          o.font = size + 'px "Press Start 2P"';
+          o.textBaseline = "top";
           o.fillStyle = "#fff";
-          o.beginPath();
-          nodes.forEach((n, i) => (i ? o.lineTo(n[0], n[1]) : o.moveTo(n[0], n[1])));
-          o.closePath();
-          o.stroke();
-          nodes.forEach((n) => {
-            o.beginPath();
-            o.arc(n[0], n[1], 22, 0, 6.29);
-            o.fill();
-          });
-          o.beginPath();
-          o.arc(cx, cy, 30, 0, 6.29);
-          o.fill();
+          const cell = size / 8;
+          const w = o.measureText(text).width;
+          const x0 = Math.round((W - w) / 2 / cell) * cell;
+          o.fillText(text, x0, top);
           const d = o.getImageData(0, 0, W, H).data;
-          for (let y = cy - r - 32; y < cy + r + 32; y += 8)
-            for (let x = cx - r - 32; x < cx + r + 32; x += 8) {
-              const i = ((y + 4) * W + (x + 4)) * 4;
-              if (d[i + 3] > 128) pts.push({ tx: x, ty: y, s: 8, kind: "sym" });
+          for (let y = top; y < top + size * 1.2; y += cell)
+            for (let x = x0; x < x0 + w; x += cell) {
+              const i = (Math.floor(y + cell / 2) * W + Math.floor(x + cell / 2)) * 4;
+              if (d[i + 3] > 128) pts.push({ tx: x, ty: y, s: cell, kind: "text" });
             }
-          const r3 = E.rng(7);
-          TITLE = pts.map((p) => {
-            const a = r3() * Math.PI * 2, rad = 500 + r3() * 900;
-            return { ...p, sx: 960 + Math.cos(a) * rad, sy: 600 + Math.sin(a) * rad * 0.7, d: r3() * 0.8 + (p.kind === "sym" ? 0 : 0.35 + (p.tx / W) * 0.5), sw: (r3() - 0.5) * 260 };
-          });
         }
-        const goldAt = (y) => {
-          const k = clamp((y - 380) / 240);
-          return `rgb(255,${Math.round(236 - 70 * k)},${Math.round(150 - 110 * k)})`;
-        };
-        function star(x, y, s, a, col) {
-          ctx.globalAlpha = a;
-          ctx.fillStyle = col;
-          ctx.fillRect(x - s * 3, y - s / 2, s * 6, s);
-          ctx.fillRect(x - s / 2, y - s * 3, s, s * 6);
-          ctx.fillRect(x - s, y - s, s * 2, s * 2);
-        }
-        function drawTitle(t) {
-          ctx.clearRect(0, 0, W, H);
-          if (t < 91.2 || !TITLE.length) return;
-          const t0 = 91.3;
-          const sweep = -300 + (t - 93.6) * 1600;
-          ["shadow", "gold"].forEach((pass) => {
-            TITLE.forEach((p) => {
-              const q = clamp((t - t0 - p.d) / 1.25);
-              if (q <= 0) return;
-              const e = 1 - Math.pow(1 - q, 3);
-              const x = p.sx + (p.tx - p.sx) * e + Math.sin(q * Math.PI) * p.sw;
-              const y = p.sy + (p.ty - p.sy) * e;
-              if (pass === "shadow") {
-                if (q < 1) return;
-                ctx.globalAlpha = 0.9;
-                ctx.fillStyle = "#5a320a";
-                ctx.fillRect(x, y + p.s / 2, p.s, p.s);
-                return;
-              }
-              ctx.globalAlpha = q < 1 ? 0.55 + 0.45 * q : 1;
-              const hl = Math.abs(p.tx + p.ty * 0.4 - sweep) < 60;
-              ctx.fillStyle = q < 1 ? "#fff3c4" : hl ? "#fffbe8" : goldAt(p.kind === "sym" ? 380 + (p.ty - 118) * 0.6 : p.ty);
-              ctx.fillRect(Math.round(x), Math.round(y), p.s, p.s);
-            });
-          });
-          if (t > 93.0) {
-            const r4 = E.rng(Math.floor((t - 92) * 4) + 999);
-            const ph = ((t - 92) * 4) % 1;
-            for (let i = 0; i < 6; i++) star(360 + r4() * 1200, 120 + r4() * 640, 3, Math.sin(ph * Math.PI) * 0.9, "#fff6d0");
+        sampleText("CONTEXT", 392, 96);
+        sampleText("ENGINEERING", 520, 96);
+        o.clearRect(0, 0, W, H);
+        const cx = 960, cy = 222, r = 104;
+        const nodes = [[cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy]];
+        o.strokeStyle = "#fff";
+        o.lineWidth = 10;
+        o.fillStyle = "#fff";
+        o.beginPath();
+        nodes.forEach((n, i) => (i ? o.lineTo(n[0], n[1]) : o.moveTo(n[0], n[1])));
+        o.closePath();
+        o.stroke();
+        nodes.forEach((n) => {
+          o.beginPath();
+          o.arc(n[0], n[1], 22, 0, 6.29);
+          o.fill();
+        });
+        o.beginPath();
+        o.arc(cx, cy, 30, 0, 6.29);
+        o.fill();
+        const d = o.getImageData(0, 0, W, H).data;
+        for (let y = cy - r - 32; y < cy + r + 32; y += 8)
+          for (let x = cx - r - 32; x < cx + r + 32; x += 8) {
+            const i = ((y + 4) * W + (x + 4)) * 4;
+            if (d[i + 3] > 128) pts.push({ tx: x, ty: y, s: 8, kind: "sym" });
           }
-          ctx.globalAlpha = 1;
+        const r3 = rng(7);
+        TITLE = pts.map((p) => {
+          const a = r3() * Math.PI * 2, rad = 500 + r3() * 900;
+          return { ...p, sx: 960 + Math.cos(a) * rad, sy: 600 + Math.sin(a) * rad * 0.7, d: r3() * 0.8 + (p.kind === "sym" ? 0 : 0.35 + (p.tx / W) * 0.5), sw: (r3() - 0.5) * 260 };
+        });
+      }
+      const goldAt = (y) => {
+        const k = clamp((y - 380) / 240);
+        return `rgb(255,${Math.round(236 - 70 * k)},${Math.round(150 - 110 * k)})`;
+      };
+      function star(x, y, s, a, col) {
+        ctx.globalAlpha = a;
+        ctx.fillStyle = col;
+        ctx.fillRect(x - s * 3, y - s / 2, s * 6, s);
+        ctx.fillRect(x - s / 2, y - s * 3, s, s * 6);
+        ctx.fillRect(x - s, y - s, s * 2, s * 2);
+      }
+      function drawTitle(t) {
+        ctx.clearRect(0, 0, W, H);
+        if (t < 91.2 || !TITLE.length) return;
+        const t0 = 91.3;
+        const sweep = -300 + (t - 93.6) * 1600;
+        ["shadow", "gold"].forEach((pass) => {
+          TITLE.forEach((p) => {
+            const q = clamp((t - t0 - p.d) / 1.25);
+            if (q <= 0) return;
+            const e = 1 - Math.pow(1 - q, 3);
+            const x = p.sx + (p.tx - p.sx) * e + Math.sin(q * Math.PI) * p.sw;
+            const y = p.sy + (p.ty - p.sy) * e;
+            if (pass === "shadow") {
+              if (q < 1) return;
+              ctx.globalAlpha = 0.9;
+              ctx.fillStyle = "#5a320a";
+              ctx.fillRect(x, y + p.s / 2, p.s, p.s);
+              return;
+            }
+            ctx.globalAlpha = q < 1 ? 0.55 + 0.45 * q : 1;
+            const hl = Math.abs(p.tx + p.ty * 0.4 - sweep) < 60;
+            ctx.fillStyle = q < 1 ? "#fff3c4" : hl ? "#fffbe8" : goldAt(p.kind === "sym" ? 380 + (p.ty - 118) * 0.6 : p.ty);
+            ctx.fillRect(Math.round(x), Math.round(y), p.s, p.s);
+          });
+        });
+        if (t > 93.0) {
+          const r4 = rng(Math.floor((t - 92) * 4) + 999);
+          const ph = ((t - 92) * 4) % 1;
+          for (let i = 0; i < 6; i++) star(360 + r4() * 1200, 120 + r4() * 640, 3, Math.sin(ph * Math.PI) * 0.9, "#fff6d0");
         }
+        ctx.globalAlpha = 1;
+      }
 
-        function draw(t) {
-          frame(t);
-          let f = 0, b = t < 1.4 ? 1 - E.easeInOut(clamp(t / 1.4)) : 0;
-          FLASHES.forEach((e) => (f = Math.max(f, env(t, e))));
-          BLACKS.forEach((e) => (b = Math.max(b, env(t, e))));
-          document.getElementById("flash").style.opacity = f.toFixed(3);
-          document.getElementById("black").style.opacity = b.toFixed(3);
-          drawTitle(t);
+      let F = null;
+      function draw(t) {
+        if (F) {
+          const shot = frame(F, t);
+          const world = F.worlds[shot.world];
+          if (world.update) world.update(t);
+          const [p, l, fov] = shot.cam;
+          camera.position.set(p[0], p[1], p[2]);
+          camera.lookAt(l[0], l[1], l[2]);
+          if (camera.fov !== fov) {
+            camera.fov = fov;
+            camera.updateProjectionMatrix();
+          }
+          renderer.render(world.scene, camera);
+          out.drawImage(glc, 0, 0, W, H);
         }
+        let f = 0, b = t < 1.2 ? 1 - easeInOut(clamp(t / 1.2)) : 0;
+        FLASHES.forEach((e) => (f = Math.max(f, env(t, e))));
+        BLACKS.forEach((e) => (b = Math.max(b, env(t, e))));
+        document.getElementById("flash").style.opacity = f.toFixed(3);
+        document.getElementById("black").style.opacity = b.toFixed(3);
+        drawTitle(t);
+      }
 
-        function build() {
-          S.build();
-          buildTitle();
-          const tl = gsap.timeline({ paused: true });
-          tl.fromTo("#subtitle", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 93.3);
-          const clock = { t: 0 };
-          tl.fromTo(clock, { t: 0 }, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: () => draw(clock.t) }, 0);
-          draw(0);
-          window.__timelines["main"] = tl;
-          if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
-        }
-
-        const SPRITES = ["front", "side", "three-quarter", "back", "back-three-quarter", "run", "map", "cheer", "laptop",
-          "head-neutral", "head-smirk", "head-laugh", "head-determined", "head-frown", "head-sigh", "head-surprised", "head-wink"];
-        Promise.all([
-          E.loadSprites(SPRITES),
-          document.fonts.load('96px "Press Start 2P"'),
-          document.fonts.load('46px "Silkscreen"'),
-        ]).then(build, build);
-      })();
+      async function build() {
+        await Promise.all([document.fonts.load('96px "Press Start 2P"'), document.fonts.load('46px "Silkscreen"')]).catch(() => {});
+        F = buildFilm();
+        buildTitle();
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#subtitle", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 93.3);
+        const clock = { t: 0 };
+        tl.fromTo(clock, { t: 0 }, { t: TOTAL, duration: TOTAL, ease: "none", onUpdate: () => draw(clock.t) }, 0);
+        draw(0);
+        window.__timelines["main"] = tl;
+        if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
+      }
+      build();
     </script>
   </body>
 </html>
