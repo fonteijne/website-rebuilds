@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import SmoothScroll from "./SmoothScroll";
 import LoginScreen from "./LoginScreen";
 import ListScreen from "./ListScreen";
+import AppUpdater from "./AppUpdater";
 
 type Props = { user: User | null; registrationOpen: boolean; hasUsers: boolean; needsSetupCode: boolean };
 
@@ -19,6 +20,7 @@ export default function Root(props: Props) {
 
   return (
     <SmoothScroll>
+      <AppUpdater />
       {user ? (
         <ListScreen key={user.id} me={user} onLogout={logout} />
       ) : (

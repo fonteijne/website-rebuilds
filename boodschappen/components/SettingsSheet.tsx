@@ -172,6 +172,9 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
           <button className="btn btn-ghost w-full" onClick={addPasskey}>
             Passkey toevoegen op dit apparaat
           </button>
+          <button className="btn btn-ghost w-full" onClick={() => location.reload()}>
+            Vernieuw app
+          </button>
           <button className="btn btn-ghost w-full" onClick={onLogout}>
             Uitloggen
           </button>
