@@ -5,6 +5,7 @@ import { startRegistration } from "@simplewebauthn/browser";
 import { useLenis } from "lenis/react";
 import type { Member, User } from "@/lib/types";
 import { api, colorFor, friendly } from "@/lib/api";
+import AppInfo from "./AppInfo";
 import { gsap, reducedMotion } from "@/lib/gsap";
 
 type Props = { me: User; open: boolean; onClose: () => void; onLogout: () => void };
@@ -254,6 +255,7 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
           <p role="status" className="min-h-5 text-center text-sm font-semibold text-leaf">
             {msg}
           </p>
+          <AppInfo className="mt-1" />
         </div>
       </div>
     </div>

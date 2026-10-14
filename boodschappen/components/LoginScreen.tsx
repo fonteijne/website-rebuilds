@@ -6,6 +6,7 @@ import type { User } from "@/lib/types";
 import { api, friendly } from "@/lib/api";
 import { gsap, useGSAP, reducedMotion } from "@/lib/gsap";
 import type { Invite } from "./Root";
+import AppInfo from "./AppInfo";
 import Backdrop from "./Backdrop";
 import SplitText from "./reactbits/SplitText";
 import Magnet from "./reactbits/Magnet";
@@ -184,6 +185,7 @@ export default function LoginScreen({ registrationOpen, invite, hasUsers, needsS
           </p>
         </div>
       </section>
+      <AppInfo className="mt-6" />
     </main>
   );
 }
