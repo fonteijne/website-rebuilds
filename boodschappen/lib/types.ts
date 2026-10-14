@@ -19,3 +19,11 @@ export type ListPayload = {
   suggestions: string[];
   members: Record<string, string>;
 };
+
+export type Recipe = {
+  id: string;
+  label: string;
+  ingredients: string[]; // zoals getypt, bv. "2x melk"
+  by: string;
+  at: number;
+};

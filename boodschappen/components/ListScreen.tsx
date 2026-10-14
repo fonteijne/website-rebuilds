@@ -8,6 +8,7 @@ import { gsap, Flip, ScrollTrigger, useGSAP, reducedMotion } from "@/lib/gsap";
 import Backdrop from "./Backdrop";
 import ItemRow from "./ItemRow";
 import SettingsSheet from "./SettingsSheet";
+import RecipesSheet from "./RecipesSheet";
 import SplitText from "./reactbits/SplitText";
 
 type FlipState = ReturnType<typeof Flip.getState>;
@@ -19,6 +20,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
   const [data, setData] = useState<ListPayload | null>(null);
   const [text, setText] = useState("");
   const [settings, setSettings] = useState(false);
+  const [recipes, setRecipes] = useState(false);
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(null);
   const flipState = useRef<FlipState | null>(null);
   const pending = useRef(0);
@@ -254,7 +256,15 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
           <p className="text-sm font-semibold text-ink2">
             {greeting}, {mine}
           </p>
-          <Avatar name={mine} id={me.id} onClick={() => setSettings(true)} size={40} />
+          <div className="flex items-center gap-2">
+            <button onClick={() => setRecipes(true)} className="flex h-10 items-center gap-1.5 rounded-full border border-line bg-card px-4 text-sm font-bold shadow-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6" />
+              </svg>
+              Recepten
+            </button>
+            <Avatar name={mine} id={me.id} onClick={() => setSettings(true)} size={40} />
+          </div>
         </div>
         <div className="hero-title">
           <SplitText text="Boodschappen" tag="h1" textAlign="left" className="font-display text-[clamp(2.6rem,12vw,3.4rem)] font-semibold leading-none tracking-tight" delay={40} duration={0.9} rootMargin="0px" />
@@ -362,6 +372,15 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
         </div>
       )}
 
+      <RecipesSheet
+        open={recipes}
+        onClose={() => setRecipes(false)}
+        onAdded={(label, n) => {
+          rev.current = -1;
+          load();
+          showToast(`${label}: ${n} ingrediënt${n === 1 ? "" : "en"} op de lijst`);
+        }}
+      />
       <SettingsSheet me={me} open={settings} onClose={() => setSettings(false)} onLogout={onLogout} />
     </div>
   );
