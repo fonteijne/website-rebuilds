@@ -2,10 +2,11 @@ import { verifyRegistrationResponse, type RegistrationResponseJSON } from "@simp
 import { db } from "@/lib/db";
 import { b64, saveCred } from "@/lib/credentials";
 import { json, sameOrigin } from "@/lib/guard";
-import { currentUser, registrationOpen, relyingParty, startSession, takeChallenge } from "@/lib/session";
+import { addMember, checkJoin, createFamily } from "@/lib/family";
+import { currentUser, relyingParty, startSession, takeChallenge } from "@/lib/session";
 import type { User } from "@/lib/types";
 
-type Chal = { kind: "new" | "add"; challenge: string; userId: string; name?: string };
+type Chal = { kind: "new" | "add"; challenge: string; userId: string; name?: string; familyId?: string; invite?: string; familyName?: string };
 
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: "Ongeldige origin" }, 403);
@@ -17,9 +18,10 @@ export async function POST(req: Request) {
   if (chal.kind === "add") {
     const me = await currentUser();
     if (!me || me.id !== chal.userId) return json({ error: "Niet ingelogd" }, 401);
-  } else if (!(await registrationOpen())) {
-    return json({ error: "Registratie is gesloten" }, 403);
   }
+  // Opnieuw controleren: de schakelaars kunnen veranderd zijn sinds de eerste stap.
+  const join = chal.kind === "new" ? await checkJoin(chal.invite) : null;
+  if (join && !join.ok) return json({ error: join.error }, join.status);
 
   let info;
   try {
@@ -48,11 +50,18 @@ export async function POST(req: Request) {
   });
 
   if (chal.kind === "new") {
-    // Eerste account wordt admin; de NX-set voorkomt dat twee gelijktijdige registraties beide admin worden.
+    // Eerste account wordt globale beheerder; de NX-set voorkomt dat twee gelijktijdige registraties beide admin worden.
     const admin = await db().set("adminId", chal.userId, { nx: true });
-    const user: User = { id: chal.userId, name: chal.name ?? "Gebruiker", admin, createdAt: Date.now() };
+    const name = chal.name ?? "Gebruiker";
+    let fam = join?.ok ? join.family : null;
+    let owner = false;
+    if (!fam) {
+      fam = await createFamily(chal.familyName ?? `Familie ${name}`, chal.userId); // eerste lid = eigenaar
+      owner = true;
+    }
+    const user: User = { id: chal.userId, name, admin, owner, fam: fam.id, createdAt: Date.now() };
     await db().set(`user:${user.id}`, user);
-    await db().sadd("users", user.id);
+    await addMember(fam.id, user.id);
     await startSession(user.id);
     return json({ ok: true, user });
   }

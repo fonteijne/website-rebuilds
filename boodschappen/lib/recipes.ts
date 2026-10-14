@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { K } from "./family";
 import type { Recipe } from "./types";
 
 /** Ingrediënten uit vrije tekst: één per regel (of komma-gescheiden), ontdubbeld. */
@@ -16,7 +17,7 @@ export function parseIngredients(input: unknown): string[] {
   return out.slice(0, 60);
 }
 
-export async function listRecipes(): Promise<Recipe[]> {
-  const all = await db().hgetall<Recipe>("recipes");
+export async function listRecipes(fam: string): Promise<Recipe[]> {
+  const all = await db().hgetall<Recipe>(K(fam).recipes);
   return Object.values(all).sort((a, b) => a.label.localeCompare(b.label, "nl"));
 }

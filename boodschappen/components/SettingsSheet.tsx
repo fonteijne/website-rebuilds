@@ -14,18 +14,28 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
   const sheet = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
-  const [regOpen, setRegOpen] = useState(true);
+  const [regOpen, setRegOpen] = useState(true); // globaal (beheerder)
+  const [fam, setFam] = useState<{ name: string; registrationOpen: boolean; globalOpen: boolean; invite?: string } | null>(null);
+  const [families, setFamilies] = useState<{ id: string; name: string; registrationOpen: boolean; members: number; owner: string }[]>([]);
   const [msg, setMsg] = useState("");
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const lenis = useLenis();
+  const admin = me.admin;
 
   const load = useCallback(async () => {
-    const d = await api<{ registrationOpen: boolean; members: Member[] }>("/api/admin/settings").catch(() => null);
-    if (d) {
-      setRegOpen(d.registrationOpen);
-      setMembers(d.members);
+    const f = await api<{ name: string; registrationOpen: boolean; globalOpen: boolean; invite?: string; members: Member[] }>("/api/family").catch(() => null);
+    if (f) {
+      setFam(f);
+      setMembers(f.members);
     }
-  }, []);
+    if (admin) {
+      const d = await api<{ registrationOpen: boolean; families: typeof families }>("/api/admin/settings").catch(() => null);
+      if (d) {
+        setRegOpen(d.registrationOpen);
+        setFamilies(d.families);
+      }
+    }
+  }, [admin]);
 
   useEffect(() => {
     if (open) {
@@ -70,10 +80,35 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
     setRegOpen(next);
     try {
       await api("/api/admin/settings", { method: "POST", json: { registrationOpen: next } });
-      setMsg(next ? "Registratie staat open." : "Registratie is gesloten.");
+      setFam((f) => f && { ...f, globalOpen: next });
+      setMsg(next ? "Registratie staat open." : "Registratie is overal gesloten.");
     } catch (e) {
       setRegOpen(!next);
       setMsg(friendly(e));
+    }
+  };
+
+  const inviteUrl = fam?.invite ? `${location.origin}/?join=${fam.invite}` : "";
+
+  const patchFamily = async (body: { registrationOpen?: boolean; regenerate?: boolean }, ok: string) => {
+    try {
+      const r = await api<{ registrationOpen: boolean; invite: string }>("/api/family", { method: "PATCH", json: body });
+      setFam((f) => f && { ...f, registrationOpen: r.registrationOpen, invite: r.invite });
+      setMsg(ok);
+    } catch (e) {
+      setMsg(friendly(e));
+    }
+  };
+
+  const shareInvite = async () => {
+    try {
+      if (navigator.share) await navigator.share({ title: `Doe mee met ${fam?.name}`, text: "Maak een account met een passkey en deel onze boodschappenlijst:", url: inviteUrl });
+      else {
+        await navigator.clipboard.writeText(inviteUrl);
+        setMsg("Link gekopieerd.");
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") setMsg("Kopiëren lukte niet. Selecteer de link en kopieer hem zelf.");
     }
   };
 
@@ -118,36 +153,74 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-xl font-semibold">{me.name}</p>
-            <p className="text-sm text-ink2">{me.admin ? "Beheerder" : "Lid"}</p>
+            <p className="truncate text-sm text-ink2">
+              {me.admin ? "Beheerder van de app" : me.owner ? "Eigenaar" : "Lid"}
+              {fam ? ` · ${fam.name}` : ""}
+            </p>
           </div>
           <button className="btn btn-ghost !min-h-10 !px-4 text-sm" onClick={onClose}>
             Klaar
           </button>
         </div>
 
-        {me.admin && (
-          <section className="sheet-in card mb-4 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <p className="font-bold">Registratie</p>
-                <p className="text-sm text-ink2">{regOpen ? "Open: iedereen met de link kan een account maken." : "Gesloten: alleen bestaande accounts kunnen inloggen."}</p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={regOpen}
-                aria-label="Registratie open"
-                onClick={toggleReg}
-                className="relative h-8 w-14 flex-none rounded-full transition-colors"
-                style={{ background: regOpen ? "var(--leaf)" : "var(--line)" }}
-              >
-                <span className="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all" style={{ left: regOpen ? "1.75rem" : "0.25rem" }} />
+        {me.owner && fam?.invite && (
+          <section className="sheet-in card mb-4 p-4" aria-label="Familie uitnodigen">
+            <p className="font-bold">Familie uitnodigen</p>
+            <p className="mb-3 text-sm text-ink2">Wie deze link opent, maakt een account en deelt jullie lijst.</p>
+            <div className="flex gap-2">
+              <input readOnly aria-label="Uitnodigingslink" data-testid="invite-url" value={inviteUrl} onFocus={(e) => e.currentTarget.select()} className="input min-w-0 flex-1 !text-sm" />
+              <button className="btn btn-brand !min-h-11 flex-none !px-4 text-sm" onClick={shareInvite}>
+                Deel
               </button>
             </div>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex-1">
+                <p className="font-bold">Registratie voor {fam.name}</p>
+                <p className="text-sm text-ink2">
+                  {!fam.globalOpen
+                    ? "De beheerder heeft registratie overal gesloten, de link werkt nu niet."
+                    : fam.registrationOpen
+                      ? "Open: iedereen met de link kan meedoen."
+                      : "Gesloten: de link werkt niet tot je hem weer opent."}
+                </p>
+              </div>
+              <Switch label="Registratie van deze familie open" on={fam.registrationOpen} onClick={() => patchFamily({ registrationOpen: !fam.registrationOpen }, fam.registrationOpen ? "Registratie van je familie is gesloten." : "Registratie van je familie staat open.")} testid="family-switch" />
+            </div>
+            <button
+              className="mt-3 text-sm font-bold !text-brand"
+              onClick={() => (confirmId === "regen" ? (setConfirmId(null), patchFamily({ regenerate: true }, "Nieuwe link gemaakt. De oude werkt niet meer.")) : setConfirmId("regen"))}
+            >
+              {confirmId === "regen" ? "Zeker weten? De oude link stopt met werken" : "Nieuwe link maken"}
+            </button>
+          </section>
+        )}
+
+        {me.admin && (
+          <section className="sheet-in card mb-4 p-4" aria-label="Beheer">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <p className="font-bold">Registratie overal</p>
+                <p className="text-sm text-ink2">{regOpen ? "Open: families bepalen zelf of hun link werkt." : "Gesloten: niemand kan een account maken, ook niet met een familielink."}</p>
+              </div>
+              <Switch label="Registratie open" on={regOpen} onClick={toggleReg} testid="global-switch" />
+            </div>
+            {families.length > 0 && (
+              <ul className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3 text-sm">
+                {families.map((f) => (
+                  <li key={f.id} className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate font-semibold">{f.name}</span>
+                    <span className="text-xs text-muted">
+                      {f.members} {f.members === 1 ? "lid" : "leden"} · {f.owner} · {f.registrationOpen ? "open" : "dicht"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         )}
 
         <section className="sheet-in card mb-4 p-4">
-          <p className="mb-2 font-bold">Leden</p>
+          <p className="mb-2 font-bold">Leden{fam ? ` van ${fam.name}` : ""}</p>
           <ul className="flex flex-col gap-2">
             {members.map((m) => (
               <li key={m.id} className="flex items-center gap-3">
@@ -157,8 +230,8 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
                 <span className="flex-1 truncate font-semibold">
                   {m.name} {m.id === me.id && <span className="text-xs font-normal text-muted">(jij)</span>}
                 </span>
-                <span className="text-xs text-muted">{m.admin ? "beheerder" : `${m.passkeys} passkey${m.passkeys === 1 ? "" : "s"}`}</span>
-                {me.admin && !m.admin && (
+                <span className="text-xs text-muted">{m.admin ? "beheerder" : m.owner ? "eigenaar" : `${m.passkeys} passkey${m.passkeys === 1 ? "" : "s"}`}</span>
+                {(me.admin || me.owner) && !m.admin && !m.owner && (
                   <button className="rounded-full px-3 py-1 text-sm font-bold text-brand hover:bg-brand/10" onClick={() => removeMember(m.id)}>
                     {confirmId === m.id ? "Zeker weten?" : "Verwijder"}
                   </button>
@@ -184,5 +257,13 @@ export default function SettingsSheet({ me, open, onClose, onLogout }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+function Switch({ on, onClick, label, testid }: { on: boolean; onClick: () => void; label: string; testid: string }) {
+  return (
+    <button role="switch" aria-checked={on} aria-label={label} data-testid={testid} onClick={onClick} className="relative h-8 w-14 flex-none rounded-full transition-colors" style={{ background: on ? "var(--leaf)" : "var(--line)" }}>
+      <span className="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all" style={{ left: on ? "1.75rem" : "0.25rem" }} />
+    </button>
   );
 }

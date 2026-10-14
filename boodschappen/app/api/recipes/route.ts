@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { K } from "@/lib/family";
 import { json, requireUser, sameOrigin } from "@/lib/guard";
 import { listRecipes, parseIngredients } from "@/lib/recipes";
 import type { Recipe } from "@/lib/types";
@@ -7,7 +8,7 @@ import type { Recipe } from "@/lib/types";
 export async function GET() {
   const me = await requireUser();
   if (me instanceof NextResponse) return me;
-  return json({ recipes: await listRecipes() });
+  return json({ recipes: await listRecipes(me.fam) });
 }
 
 export async function POST(req: Request) {
@@ -20,6 +21,6 @@ export async function POST(req: Request) {
   if (!label) return json({ error: "Geef het recept een label" }, 400);
   if (!ingredients.length) return json({ error: "Voeg minstens één ingrediënt toe" }, 400);
   const recipe: Recipe = { id: crypto.randomUUID().slice(0, 12), label, ingredients, by: me.id, at: Date.now() };
-  await db().hset("recipes", recipe.id, recipe);
+  await db().hset(K(me.fam).recipes, recipe.id, recipe);
   return json({ recipe });
 }

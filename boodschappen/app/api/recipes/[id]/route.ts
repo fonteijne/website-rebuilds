@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { K } from "@/lib/family";
 import { json, requireUser, sameOrigin } from "@/lib/guard";
 import { parseIngredients } from "@/lib/recipes";
 import type { Recipe } from "@/lib/types";
@@ -11,7 +12,7 @@ export async function PUT(req: Request, { params }: Ctx) {
   const me = await requireUser();
   if (me instanceof NextResponse) return me;
   const { id } = await params;
-  const cur = await db().hget<Recipe>("recipes", id);
+  const cur = await db().hget<Recipe>(K(me.fam).recipes, id);
   if (!cur) return json({ error: "Recept niet gevonden" }, 404);
   const body = (await req.json().catch(() => ({}))) as { label?: string; ingredients?: unknown };
   const label = body.label?.trim().slice(0, 40);
@@ -19,7 +20,7 @@ export async function PUT(req: Request, { params }: Ctx) {
   if (!label) return json({ error: "Geef het recept een label" }, 400);
   if (!ingredients.length) return json({ error: "Voeg minstens één ingrediënt toe" }, 400);
   const recipe: Recipe = { ...cur, label, ingredients };
-  await db().hset("recipes", id, recipe);
+  await db().hset(K(me.fam).recipes, id, recipe);
   return json({ recipe });
 }
 
@@ -28,6 +29,6 @@ export async function DELETE(req: Request, { params }: Ctx) {
   const me = await requireUser();
   if (me instanceof NextResponse) return me;
   const { id } = await params;
-  await db().hdel("recipes", id);
+  await db().hdel(K(me.fam).recipes, id);
   return json({ ok: true });
 }

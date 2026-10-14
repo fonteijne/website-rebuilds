@@ -46,24 +46,29 @@ await A.page.waitForTimeout(1200);
 ok((await A.page.locator('section[aria-label="In de mand"] [data-flip-id^=i-]').count()) === 1, "A: Melk verschoof naar 'In de mand'");
 await A.page.screenshot({ path: `${OUT}/03-checked.png` });
 
-// Instellingen (admin)
+// Instellingen (admin + familie-eigenaar)
 await A.page.click('header button[aria-label="Instellingen"]');
-await A.page.waitForSelector('[role=switch]');
+await A.page.waitForSelector('[data-testid=global-switch]');
+await A.page.waitForSelector('[data-testid=invite-url]');
 await A.page.waitForTimeout(900);
 await A.page.screenshot({ path: `${OUT}/04-admin.png` });
-ok((await A.page.getAttribute("[role=switch]", "aria-checked")) === "true", "A: registratie staat open bij start");
+const sw = (page, id) => page.getAttribute(`[data-testid=${id}]`, "aria-checked");
+ok((await sw(A.page, "global-switch")) === "true", "A: globale registratie staat open bij start");
+ok((await sw(A.page, "family-switch")) === "true", "A: familie-registratie staat open bij start");
+const inviteUrl = await A.page.inputValue("[data-testid=invite-url]");
+ok(/\?join=[a-f0-9]{20}$/.test(inviteUrl), `A: uitnodigingslink ${inviteUrl.replace(/^https?:\/\/[^/]+/, "")}`);
+const path = (u) => u.replace(/^https?:\/\/[^/]+/, "");
 
-// B registreert terwijl open
+// B doet mee via de link
 const B = await person("B");
-await B.page.goto(BASE);
-await B.page.waitForSelector("text=Welkom terug");
+await B.page.goto(BASE + path(inviteUrl));
+await B.page.waitForSelector("text=Doe mee met");
 await B.page.waitForTimeout(3000); await B.page.screenshot({ path: `${OUT}/05-login.png` });
-await B.page.click("text=Account maken");
 await B.page.fill('input[autocomplete="name"]', "Alex");
 await B.page.click("text=Passkey aanmaken");
 await B.page.waitForSelector("#new-item", { timeout: 15000 });
-ok((await B.page.locator("[data-flip-id^=i-]").count()) === 5, "B: ziet dezelfde lijst");
-ok(await B.page.locator("header [aria-label=Instellingen]").isVisible(), "B: ingelogd");
+ok((await B.page.locator("[data-flip-id^=i-]").count()) === 5, "B: ziet dezelfde lijst als A");
+ok(!(await B.page.url()).includes("join="), "B: ?join= is uit de adresbalk gehaald");
 
 // Realtime: B voegt toe, A ziet het
 await B.page.fill("#new-item", "Pasta");
@@ -72,28 +77,86 @@ await A.page.keyboard.press("Escape");
 await A.page.waitForSelector("text=Pasta", { timeout: 10000 });
 ok(true, "A: ziet item van B binnen polling-interval");
 
-// A sluit registratie
-await A.page.click('header button[aria-label="Instellingen"]').catch(() => {});
-await A.page.waitForSelector('[role=switch]');
-await A.page.click("[role=switch]");
+// D start zonder link een eigen familie: geen toegang tot de lijst van A
+const D = await person("D");
+await D.page.goto(BASE);
+await D.page.waitForSelector("text=Welkom terug");
+await D.page.click("text=Account maken");
+await D.page.waitForSelector("text=Eigen familie starten");
+await D.page.fill('input[autocomplete="name"]', "Dana");
+await D.page.fill('input[placeholder="Bijv. Familie Jansen"]', "Familie Dana");
+await D.page.click("text=Passkey aanmaken");
+await D.page.waitForSelector("#new-item", { timeout: 15000 });
+ok((await D.page.locator("[data-flip-id^=i-]").count()) === 0, "D: eigen familie begint met een lege lijst");
+await D.page.fill("#new-item", "Geheim");
+await D.page.keyboard.press("Enter");
+await D.page.waitForSelector("text=Geheim");
+await A.page.waitForTimeout(4500);
+ok((await A.page.locator("text=Geheim").count()) === 0, "A: ziet niets van familie D");
+const dItems = await D.page.evaluate(async () => (await (await fetch("/api/items")).json()).items.map((i) => i.text));
+ok(!dItems.includes("Pasta") && dItems.includes("Geheim"), "D: API toont alleen eigen items");
+await D.page.click('header button[aria-label="Instellingen"]');
+await D.page.waitForSelector("[data-testid=invite-url]");
+ok((await D.page.locator("[data-testid=global-switch]").count()) === 0, "D: geen globale schakelaar (wel eigen familie-link)");
+const dInvite = await D.page.inputValue("[data-testid=invite-url]");
+ok(dInvite !== inviteUrl, "D: eigen, andere uitnodigingslink");
+
+// A sluit alleen de registratie van de eigen familie
+await A.page.click('header button[aria-label="Instellingen"]');
+await A.page.waitForSelector("[data-testid=family-switch]");
+await A.page.waitForTimeout(800);
+await A.page.click('[data-testid=family-switch]');
 await A.page.waitForTimeout(600);
-ok((await A.page.getAttribute("[role=switch]", "aria-checked")) === "false", "A: registratie gesloten");
+ok((await sw(A.page, "family-switch")) === "false", "A: familie-registratie gesloten");
+const E = await person("E");
+await E.page.goto(BASE + path(inviteUrl));
+await E.page.waitForSelector("text=Welkom terug");
+await E.page.waitForSelector("text=De registratie voor");
+ok((await E.page.locator("text=Passkey aanmaken").count()) === 0, "E: familie dicht, geen registratieformulier");
+const famClosed = await E.page.evaluate(async (inv) => (await fetch("/api/auth/register/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Eve", invite: inv }) })).status, inviteUrl.split("join=")[1]);
+ok(famClosed === 403, `E: API weigert familielink als familie dicht is (${famClosed})`);
+// De andere familie (D) blijft gewoon open
+const dOpen = await E.page.evaluate(async (inv) => (await fetch("/api/auth/register/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Eve", invite: inv }) })).status, dInvite.split("join=")[1]);
+ok(dOpen === 200, `E: link van familie D werkt nog (${dOpen})`);
 
-// B (niet-admin) heeft geen schakelaar
+// A heropent de familie en sluit daarna globaal: globaal wint
+await A.page.click('[data-testid=family-switch]');
+await A.page.waitForTimeout(600);
+const famOpenAgain = await E.page.evaluate(async (inv) => (await fetch("/api/auth/register/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Eve", invite: inv }) })).status, inviteUrl.split("join=")[1]);
+ok(famOpenAgain === 200, `E: link werkt weer na heropenen (${famOpenAgain})`);
+await A.page.click('[data-testid=global-switch]');
+await A.page.waitForTimeout(600);
+ok((await sw(A.page, "global-switch")) === "false", "A: globale registratie gesloten");
+ok((await sw(A.page, "family-switch")) === "true", "A: familie-schakelaar staat nog open");
+await A.page.screenshot({ path: `${OUT}/09-global-closed.png` });
+const statuses = await E.page.evaluate(
+  async ([a, b]) => {
+    const call = async (body) => (await fetch("/api/auth/register/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).status;
+    return [await call({ name: "Eve", invite: a }), await call({ name: "Eve", invite: b }), await call({ name: "Eve" })];
+  },
+  [inviteUrl.split("join=")[1], dInvite.split("join=")[1]],
+);
+ok(statuses.every((x) => x === 403), `E: globaal dicht blokkeert alle links en nieuwe families (${statuses})`);
+await E.page.goto(BASE);
+await E.page.waitForSelector("text=Welkom terug");
+ok((await E.page.locator("text=Account maken").count()) === 0, "E: geen registratie-knop meer");
+await E.page.waitForTimeout(2500); await E.page.screenshot({ path: `${OUT}/07-closed.png` });
+
+// B (lid) heeft geen beheer of uitnodiging
 await B.page.click('header button[aria-label="Instellingen"]');
-await B.page.waitForSelector("text=Leden");
+await B.page.waitForSelector("text=Leden van");
 await B.page.waitForTimeout(700);
-ok((await B.page.locator("[role=switch]").count()) === 0, "B: geen admin-schakelaar");
+ok((await B.page.locator("[role=switch]").count()) === 0 && (await B.page.locator("[data-testid=invite-url]").count()) === 0, "B: geen schakelaars of uitnodigingslink");
 await B.page.screenshot({ path: `${OUT}/06-member-sheet.png` });
+const bPatch = await B.page.evaluate(async () => (await fetch("/api/family", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ registrationOpen: false }) })).status);
+ok(bPatch === 403, `B: lid kan familie-instelling niet wijzigen (${bPatch})`);
+const bUsers = await B.page.evaluate(async () => (await fetch("/api/admin/users/" + "x", { method: "DELETE" })).status);
+ok(bUsers === 404 || bUsers === 403, `B: lid kan niemand verwijderen (${bUsers})`);
 
-// C kan niet meer registreren
-const C = await person("C");
-await C.page.goto(BASE);
-await C.page.waitForSelector("text=Welkom terug");
-ok((await C.page.locator("text=Account maken").count()) === 0, "C: geen registratie-knop meer");
-await C.page.waitForTimeout(3000); await C.page.screenshot({ path: `${OUT}/07-closed.png` });
-const direct = await C.page.evaluate(async () => (await fetch("/api/auth/register/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Eve" }) })).status);
-ok(direct === 403, `C: API weigert registratie (${direct})`);
+// Eigenaar D mag geen lid van een andere familie verwijderen
+const alexId = await A.page.evaluate(async () => (await (await fetch("/api/family")).json()).members.find((m) => m.name === "Alex").id);
+const dDel = await D.page.evaluate(async (id) => (await fetch("/api/admin/users/" + id, { method: "DELETE" })).status, alexId);
+ok(dDel === 403, `D: eigenaar kan lid van andere familie niet verwijderen (${dDel})`);
 
 // B uitloggen en weer inloggen met passkey
 await B.page.click("text=Uitloggen");
@@ -103,10 +166,12 @@ await B.page.waitForSelector("#new-item", { timeout: 15000 });
 ok(true, "B: opnieuw ingelogd met passkey");
 
 // Niet ingelogd -> API 401
-const anon = await C.page.evaluate(async () => (await fetch("/api/items")).status);
+const anon = await E.page.evaluate(async () => (await fetch("/api/items")).status);
 ok(anon === 401, `anoniem krijgt 401 (${anon})`);
 const nonAdmin = await B.page.evaluate(async () => (await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ registrationOpen: true }) })).status);
-ok(nonAdmin === 403, `niet-admin kan registratie niet heropenen (${nonAdmin})`);
+ok(nonAdmin === 403, `niet-admin kan globale registratie niet heropenen (${nonAdmin})`);
+const dGlobal = await D.page.evaluate(async () => (await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ registrationOpen: true }) })).status);
+ok(dGlobal === 403, `familie-eigenaar is geen globale beheerder (${dGlobal})`);
 
 // swipe-to-delete op A
 await A.page.keyboard.press("Escape");

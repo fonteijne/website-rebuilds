@@ -1,19 +1,24 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { credsOf } from "@/lib/credentials";
-import { json, requireAdmin, requireUser, sameOrigin } from "@/lib/guard";
-import { registrationOpen } from "@/lib/session";
-import type { Member, User } from "@/lib/types";
+import { familyMembers, getFamily, registrationOpen } from "@/lib/family";
+import { json, requireAdmin, sameOrigin } from "@/lib/guard";
+import type { Family } from "@/lib/types";
 
+/** Globale instellingen voor de beheerder: de hoofdschakelaar en een overzicht van alle families. */
 export async function GET() {
-  const me = await requireUser();
+  const me = await requireAdmin();
   if (me instanceof NextResponse) return me;
-  const ids = await db().smembers("users");
-  const users = (await Promise.all(ids.map((id) => db().get<User>(`user:${id}`)))).filter((u): u is User => !!u);
-  const members: Member[] = await Promise.all(
-    users.sort((a, b) => a.createdAt - b.createdAt).map(async (u) => ({ id: u.id, name: u.name, admin: u.admin, passkeys: (await credsOf(u.id)).length })),
+  const ids = await db().smembers("families");
+  const fams = (await Promise.all(ids.map((id) => getFamily(id)))).filter((f): f is Family => !!f);
+  const families = await Promise.all(
+    fams
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map(async (f) => {
+        const members = await familyMembers(f.id);
+        return { id: f.id, name: f.name, registrationOpen: f.registrationOpen, members: members.length, owner: members.find((u) => u.id === f.ownerId)?.name ?? "?" };
+      }),
   );
-  return json({ registrationOpen: await registrationOpen(), members });
+  return json({ registrationOpen: await registrationOpen(), families });
 }
 
 export async function POST(req: Request) {

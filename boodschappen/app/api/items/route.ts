@@ -5,7 +5,7 @@ import { addItem, readList } from "@/lib/items";
 export async function GET(req: Request) {
   const me = await requireUser();
   if (me instanceof NextResponse) return me;
-  const list = await readList();
+  const list = await readList(me.fam);
   const since = Number(new URL(req.url).searchParams.get("since"));
   if (Number.isFinite(since) && since === list.rev) return json({ rev: list.rev, unchanged: true });
   return json(list);

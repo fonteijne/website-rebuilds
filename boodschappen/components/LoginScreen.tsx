@@ -5,22 +5,29 @@ import { startAuthentication, startRegistration, browserSupportsWebAuthn } from 
 import type { User } from "@/lib/types";
 import { api, friendly } from "@/lib/api";
 import { gsap, useGSAP, reducedMotion } from "@/lib/gsap";
+import type { Invite } from "./Root";
 import Backdrop from "./Backdrop";
 import SplitText from "./reactbits/SplitText";
 import Magnet from "./reactbits/Magnet";
 
 type Props = {
   registrationOpen: boolean;
+  invite: Invite | null;
   hasUsers: boolean;
   needsSetupCode: boolean;
   onAuthed: (u: User) => void;
 };
 
-export default function LoginScreen({ registrationOpen, hasUsers, needsSetupCode, onAuthed }: Props) {
+export default function LoginScreen({ registrationOpen, invite, hasUsers, needsSetupCode, onAuthed }: Props) {
+  // Met een uitnodigingslink maak je een account in die familie, zonder link start je een nieuwe familie.
+  // De globale schakelaar van de beheerder wint altijd; `invite.open` houdt daar al rekening mee.
+  const canRegister = invite ? invite.open : registrationOpen;
+  const joining = invite?.family ?? null;
   const root = useRef<HTMLElement>(null);
-  const [mode, setMode] = useState<"login" | "register">(!hasUsers ? "register" : "login");
+  const [mode, setMode] = useState<"login" | "register">(!hasUsers || (invite?.open && joining) ? "register" : "login");
   const [name, setName] = useState("");
   const [setupCode, setSetupCode] = useState("");
+  const [familyName, setFamilyName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -61,6 +68,7 @@ export default function LoginScreen({ registrationOpen, hasUsers, needsSetupCode
   };
 
   const done = (u: User) => {
+    if (invite) history.replaceState(null, "", location.pathname);
     if (reducedMotion()) return onAuthed(u);
     gsap.to(root.current, { autoAlpha: 0, y: -20, duration: 0.35, ease: "power2.in", onComplete: () => onAuthed(u) });
   };
@@ -87,7 +95,7 @@ export default function LoginScreen({ registrationOpen, hasUsers, needsSetupCode
     try {
       const options = await api<Parameters<typeof startRegistration>[0]["optionsJSON"]>("/api/auth/register/options", {
         method: "POST",
-        json: { name, setupCode },
+        json: { name, setupCode, familyName, invite: invite?.code },
       });
       const response = await startRegistration({ optionsJSON: options });
       const { user } = await api<{ user: User }>("/api/auth/register/verify", { method: "POST", json: response });
@@ -130,31 +138,39 @@ export default function LoginScreen({ registrationOpen, hasUsers, needsSetupCode
                   <KeyIcon /> {busy ? "Even wachten…" : "Inloggen met passkey"}
                 </button>
               </Magnet>
-              {registrationOpen ? (
+              {invite && !joining && <p className="rounded-xl bg-brand/10 p-3 text-center text-sm">Deze uitnodigingslink is ongeldig of vervangen. Vraag om een nieuwe link.</p>}
+              {invite && joining && !invite.open && <p className="rounded-xl bg-brand/10 p-3 text-center text-sm">De registratie voor {joining} is gesloten.</p>}
+              {canRegister ? (
                 <button className="btn btn-ghost w-full" onClick={() => switchMode("register")}>
-                  Nieuw hier? Account maken
+                  {joining ? `Nieuw hier? Doe mee met ${joining}` : "Nieuw hier? Account maken"}
                 </button>
               ) : (
-                <p className="text-center text-xs text-muted">Registratie is gesloten. Alleen bestaande accounts kunnen inloggen.</p>
+                !invite && <p className="text-center text-xs text-muted">Registratie is gesloten. Alleen bestaande accounts kunnen inloggen.</p>
               )}
             </div>
           ) : (
             <form onSubmit={register} className="flex flex-col gap-3">
-              <h3 className="font-display text-xl font-semibold">{hasUsers ? "Account maken" : "Eerste keer: jij wordt beheerder"}</h3>
+              <h3 className="font-display text-xl font-semibold">{joining ? `Doe mee met ${joining}` : hasUsers ? "Eigen familie starten" : "Eerste keer: jij wordt beheerder"}</h3>
               <label className="flex flex-col gap-1.5 text-sm font-semibold">
                 Je naam
                 <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Bijv. Sam" maxLength={24} autoComplete="name" required />
               </label>
+              {!joining && (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">
+                  Naam van je familie <span className="font-normal text-muted">(optioneel)</span>
+                  <input className="input" value={familyName} onChange={(e) => setFamilyName(e.target.value)} placeholder="Bijv. Familie Jansen" maxLength={30} />
+                </label>
+              )}
               {needsSetupCode && (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">
                   Setup-code
                   <input className="input" value={setupCode} onChange={(e) => setSetupCode(e.target.value)} placeholder="Staat in je Vercel-instellingen" autoComplete="off" required />
                 </label>
               )}
-              <button className="btn btn-brand w-full" disabled={busy || !supported || !registrationOpen}>
+              <button className="btn btn-brand w-full" disabled={busy || !supported || !canRegister}>
                 <KeyIcon /> {busy ? "Even wachten…" : "Passkey aanmaken"}
               </button>
-              {!registrationOpen && <p className="text-center text-xs text-muted">Registratie is gesloten.</p>}
+              {!canRegister && <p className="text-center text-xs text-muted">Registratie is gesloten.</p>}
               {hasUsers && (
                 <button type="button" className="btn btn-ghost w-full" onClick={() => switchMode("login")}>
                   Ik heb al een account

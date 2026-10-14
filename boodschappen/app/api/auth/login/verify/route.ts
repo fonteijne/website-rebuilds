@@ -2,8 +2,7 @@ import { verifyAuthenticationResponse, type AuthenticationResponseJSON, type Aut
 import { db } from "@/lib/db";
 import { b64, type Cred } from "@/lib/credentials";
 import { json, sameOrigin } from "@/lib/guard";
-import { relyingParty, startSession, takeChallenge } from "@/lib/session";
-import type { User } from "@/lib/types";
+import { getUser, relyingParty, startSession, takeChallenge } from "@/lib/session";
 
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: "Ongeldige origin" }, 403);
@@ -11,7 +10,7 @@ export async function POST(req: Request) {
   if (!chal) return json({ error: "Sessie verlopen, probeer opnieuw" }, 400);
   const response = (await req.json()) as AuthenticationResponseJSON;
   const cred = await db().get<Cred>(`cred:${response.id}`);
-  const user = cred ? await db().get<User>(`user:${cred.userId}`) : null;
+  const user = cred ? await getUser(cred.userId) : null;
   if (!cred || !user) return json({ error: "Deze passkey is onbekend" }, 401);
 
   const { rpID, origin } = await relyingParty();

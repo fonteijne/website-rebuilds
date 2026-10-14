@@ -1,4 +1,14 @@
-export type User = { id: string; name: string; admin: boolean; createdAt: number };
+/** admin = globale beheerder (eerste gebruiker van de app), owner = eigenaar van de eigen familie. */
+export type User = { id: string; name: string; admin: boolean; owner: boolean; fam: string; createdAt: number };
+
+export type Family = {
+  id: string;
+  name: string;
+  ownerId: string;
+  registrationOpen: boolean; // uitnodigingslink werkt (alleen als de globale registratie ook open staat)
+  invite: string; // geheime code in de uitnodigingslink
+  createdAt: number;
+};
 
 export type Item = {
   id: string;
@@ -13,7 +23,7 @@ export type Item = {
   man?: boolean; // ook los toegevoegd: blijft staan als het recept eraf gaat
 };
 
-export type Member = { id: string; name: string; admin: boolean; passkeys: number };
+export type Member = { id: string; name: string; admin: boolean; owner: boolean; passkeys: number };
 
 export type ListPayload = {
   rev: number;

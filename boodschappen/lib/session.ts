@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "./db";
+import { migrateLegacy } from "./family";
 import type { User } from "./types";
 
 const COOKIE = "sid";
@@ -35,6 +36,16 @@ export async function endSession() {
   (await cookies()).delete(COOKIE);
 }
 
+/** Laadt een gebruiker; accounts van vóór de families worden eenmalig naar familie "home" gemigreerd. */
+export async function getUser(id: string): Promise<User | null> {
+  let u = await db().get<User>(`user:${id}`);
+  if (u && !u.fam) {
+    await migrateLegacy();
+    u = await db().get<User>(`user:${id}`);
+  }
+  return u?.fam ? u : null;
+}
+
 /** Geeft de ingelogde gebruiker, of null. Verwijderde gebruikers zijn meteen uitgelogd. */
 export async function currentUser(): Promise<User | null> {
   const token = (await cookies()).get(COOKIE)?.value;
@@ -42,7 +53,7 @@ export async function currentUser(): Promise<User | null> {
   try {
     const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
     if (!payload.sub) return null;
-    return await db().get<User>(`user:${payload.sub}`);
+    return await getUser(payload.sub);
   } catch {
     return null;
   }
@@ -77,6 +88,4 @@ export async function relyingParty() {
   return { rpID: host.replace(/:\d+$/, ""), origin: `${proto}://${host}`, rpName: "Boodschappen" };
 }
 
-export async function registrationOpen() {
-  return (await db().get<boolean>("registrationOpen")) !== false;
-}
+export { registrationOpen } from "./family";
