@@ -341,7 +341,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
         {total > 0 && (
           <div role="tablist" aria-label="Weergave" className="mb-4 flex rounded-full border border-line bg-card p-1 text-sm font-bold">
             {([["cat", "Categorie"], ["rec", "Recept"]] as const).map(([v, l]) => (
-              <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`h-9 flex-1 rounded-full transition-colors ${view === v ? "bg-ink text-bg" : "text-ink2"}`}>
+              <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`h-9 flex-1 rounded-full transition-colors ${view === v ? "bg-ink !text-bg" : "!text-ink2"}`}>
                 {l}
               </button>
             ))}
