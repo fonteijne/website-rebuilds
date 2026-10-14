@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { Item, ListPayload, User } from "@/lib/types";
+import type { Item, ListPayload, Recipe, User } from "@/lib/types";
 import { api, colorFor } from "@/lib/api";
 import { CATEGORIES, categorize, normKey, parseItem } from "@/lib/categories";
 import { gsap, Flip, ScrollTrigger, useGSAP, reducedMotion } from "@/lib/gsap";
@@ -21,6 +21,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
   const [text, setText] = useState("");
   const [settings, setSettings] = useState(false);
   const [recipes, setRecipes] = useState(false);
+  const [view, setViewState] = useState<"cat" | "rec">("cat");
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(null);
   const flipState = useRef<FlipState | null>(null);
   const pending = useRef(0);
@@ -92,6 +93,19 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
     [commit, load],
   );
 
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("view") === "rec") setViewState("rec");
+    } catch {}
+  }, []);
+  const setView = (v: "cat" | "rec") => {
+    if (root.current && !reducedMotion()) flipState.current = Flip.getState(root.current.querySelectorAll("[data-flip]"));
+    setViewState(v);
+    try {
+      localStorage.setItem("view", v);
+    } catch {}
+  };
+
   const showToast = (msg: string, undo?: () => void) => {
     clearTimeout(toastTimer.current);
     setToast({ msg, undo });
@@ -144,6 +158,23 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
     [mutate, add],
   );
 
+  const removeRecipe = (r: { id: string; label: string }) => {
+    const n = data?.items.filter((i) => i.rec?.some((x) => x.id === r.id) && !(i.man || (i.rec?.length ?? 0) > 1)).length ?? 0;
+    mutate(
+      (d) => ({
+        ...d,
+        items: d.items.flatMap((i) => {
+          if (!i.rec?.some((x) => x.id === r.id)) return [i];
+          const rec = i.rec.filter((x) => x.id !== r.id);
+          return rec.length || i.man ? [{ ...i, rec: rec.length ? rec : undefined }] : [];
+        }),
+      }),
+      () => api(`/api/recipes/${r.id}/remove`, { method: "POST" }),
+    );
+    navigator.vibrate?.(10);
+    showToast(`${r.label} van de lijst gehaald${n ? ` (${n})` : ""}`);
+  };
+
   const clearDone = () => {
     const n = data?.items.filter((i) => i.done).length ?? 0;
     if (!n) return;
@@ -171,6 +202,23 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data],
   );
+  const recGroups = useMemo(() => {
+    const m = new Map<string, { id: string; label: string; items: Item[] }>();
+    const loose: Item[] = [];
+    for (const i of active) {
+      const r = i.rec?.[0];
+      if (!r) loose.push(i);
+      else (m.get(r.id) ?? m.set(r.id, { id: r.id, label: r.label, items: [] }).get(r.id)!).items.push(i);
+    }
+    return { groups: [...m.values()], loose };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+  const onListCount = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const i of items) for (const r of i.rec ?? []) c[r.id] = (c[r.id] ?? 0) + 1;
+    return c;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
   const total = items.length;
   const pct = total ? done.length / total : 0;
   const who = (id: string) => data?.members[id] ?? "?";
@@ -290,8 +338,38 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
 
         {data && total === 0 && <EmptyState />}
 
+        {total > 0 && (
+          <div role="tablist" aria-label="Weergave" className="mb-4 flex rounded-full border border-line bg-card p-1 text-sm font-bold">
+            {([["cat", "Categorie"], ["rec", "Recept"]] as const).map(([v, l]) => (
+              <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`h-9 flex-1 rounded-full transition-colors ${view === v ? "bg-ink text-bg" : "text-ink2"}`}>
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-col gap-5">
-          {groups.map((g) => (
+          {view === "rec" &&
+            [...recGroups.groups.map((g) => ({ ...g, rec: true })), ...(recGroups.loose.length ? [{ id: "loose", label: "Los toegevoegd", items: recGroups.loose, rec: false }] : [])].map((g) => (
+              <section key={g.id} aria-label={g.label}>
+                <h2 data-flip data-flip-id={`r-${g.id}`} className="mb-2 flex items-center gap-2 px-1 text-xs font-extrabold uppercase tracking-widest text-ink2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-sun" />
+                  {g.label}
+                  <span className="font-semibold text-muted">{g.items.length}</span>
+                  {g.rec && (
+                    <button onClick={() => removeRecipe(g)} className="ml-auto rounded-full px-3 py-1 text-xs font-bold normal-case tracking-normal text-brand hover:bg-brand/10">
+                      Haal van lijst
+                    </button>
+                  )}
+                </h2>
+                <ul className="flex flex-col gap-2">
+                  {g.items.map((i) => (
+                    <ItemRow key={i.id} item={i} who={who(i.by)} onToggle={toggle} onDelete={remove} />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          {view === "cat" && groups.map((g) => (
             <section key={g.id} aria-label={g.label}>
               <h2 data-flip data-flip-id={`s-${g.id}`} className="mb-2 flex items-center gap-2 px-1 text-xs font-extrabold uppercase tracking-widest text-ink2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: g.color }} />
@@ -375,6 +453,8 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
       <RecipesSheet
         open={recipes}
         onClose={() => setRecipes(false)}
+        onList={onListCount}
+        onRemove={(r: Recipe) => removeRecipe(r)}
         onAdded={(label, n) => {
           rev.current = -1;
           load();

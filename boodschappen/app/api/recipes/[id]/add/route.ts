@@ -13,6 +13,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!recipe) return json({ error: "Recept niet gevonden" }, 404);
   // Na elkaar, zodat dubbele ingrediënten correct samenvallen.
   let added = 0;
-  for (const ing of recipe.ingredients) if (await addItem(ing, me)) added++;
+  for (const ing of recipe.ingredients) if (await addItem(ing, me, undefined, { id: recipe.id, label: recipe.label })) added++;
   return json({ added, label: recipe.label });
 }

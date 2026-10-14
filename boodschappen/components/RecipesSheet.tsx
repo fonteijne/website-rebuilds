@@ -6,10 +6,10 @@ import type { Recipe } from "@/lib/types";
 import { api, friendly } from "@/lib/api";
 import { gsap, reducedMotion } from "@/lib/gsap";
 
-type Props = { open: boolean; onClose: () => void; onAdded: (label: string, count: number) => void };
+type Props = { open: boolean; onClose: () => void; onAdded: (label: string, count: number) => void; onList: Record<string, number>; onRemove: (r: Recipe) => void };
 type Draft = { id?: string; label: string; text: string };
 
-export default function RecipesSheet({ open, onClose, onAdded }: Props) {
+export default function RecipesSheet({ open, onClose, onAdded, onList, onRemove }: Props) {
   const sheet = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
@@ -177,9 +177,15 @@ export default function RecipesSheet({ open, onClose, onAdded }: Props) {
                     <span className="flex-none rounded-full bg-line px-2.5 py-0.5 text-xs font-bold tabular-nums">{r.ingredients.length}</span>
                   </div>
                   <div className="mt-3 flex items-center gap-2">
-                    <button className="btn btn-brand !min-h-11 flex-1 text-sm" disabled={busy === r.id} onClick={() => addToList(r)}>
-                      {busy === r.id ? "Toevoegen…" : "Zet op lijst"}
-                    </button>
+                    {onList[r.id] ? (
+                      <button className="btn btn-ghost !min-h-11 flex-1 text-sm" onClick={() => onRemove(r)}>
+                        Haal van lijst · {onList[r.id]}
+                      </button>
+                    ) : (
+                      <button className="btn btn-brand !min-h-11 flex-1 text-sm" disabled={busy === r.id} onClick={() => addToList(r)}>
+                        {busy === r.id ? "Toevoegen…" : "Zet op lijst"}
+                      </button>
+                    )}
                     <button className="rounded-full px-3 py-2 text-sm font-bold text-ink2 hover:bg-line" onClick={() => setDraft({ id: r.id, label: r.label, text: r.ingredients.join("\n") })}>
                       Bewerk
                     </button>
