@@ -1,0 +1,160 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+:root {
+  --bg: #f5efe3;
+  --bg-2: #efe6d4;
+  --card: #fffdf8;
+  --ink: #17382b;
+  --ink-2: #4c6358;
+  --muted: #8a9a8f;
+  --line: rgba(23, 56, 43, 0.12);
+  --brand: #e5533c;
+  --brand-ink: #fff;
+  --leaf: #3f8a5a;
+  --sun: #f2c14e;
+  --shadow: 0 1px 0 rgba(23, 56, 43, 0.06), 0 10px 30px -12px rgba(23, 56, 43, 0.25);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1d17;
+    --bg-2: #14271f;
+    --card: #1a2f26;
+    --ink: #f1ead8;
+    --ink-2: #b9c7bc;
+    --muted: #7b8f83;
+    --line: rgba(241, 234, 216, 0.14);
+    --brand: #ff6a50;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 12px 30px -12px rgba(0, 0, 0, 0.6);
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-leaf: var(--leaf);
+  --color-sun: var(--sun);
+}
+
+html {
+  background: var(--bg);
+  color-scheme: light dark;
+}
+body {
+  min-height: 100dvh;
+  background: radial-gradient(1200px 600px at 10% -10%, var(--bg-2), transparent 60%), var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--sun);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
+}
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: transform 0.15s, background 0.2s, opacity 0.2s;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: progress;
+}
+.btn-brand {
+  background: var(--brand);
+  color: var(--brand-ink);
+  box-shadow: 0 10px 24px -10px var(--brand);
+}
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+}
+.input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 1.1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px; /* voorkomt iOS-zoom */
+}
+.input::placeholder {
+  color: var(--muted);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--leaf);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--leaf) 22%, transparent);
+}
+
+/* lijstrij */
+.row {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chip {
+  flex: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
