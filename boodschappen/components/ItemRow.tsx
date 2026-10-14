@@ -125,19 +125,18 @@ function ItemRow({ item, who, onToggle, onDelete }: Props) {
           </ClickSpark>
         </div>
 
-        <button onClick={toggle} className="relative min-w-0 flex-1 py-2 text-left text-[1.05rem] font-semibold leading-tight">
-          <span className="relative inline-block max-w-full truncate align-bottom">
+        <button onClick={toggle} className="relative flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-[1.05rem] font-semibold leading-tight">
+          <span className="relative inline-block min-w-0 truncate align-bottom">
             {item.text}
             <span ref={strike} className="absolute left-0 top-1/2 h-[2px] w-full origin-left bg-ink" style={{ transform: `scaleX(${item.done ? 1 : 0})` }} />
           </span>
           {item.rec && item.rec.length > 0 && (
-            <span className="mt-1 flex flex-wrap gap-1">
-              {item.rec.map((r) => (
-                <span key={r.id} className="max-w-[11rem] truncate rounded-full bg-leaf/15 px-2 py-0.5 text-[11px] font-bold leading-tight text-leaf">
-                  {r.label}
-                  {r.q ? ` · ${r.q}×` : ""}
-                </span>
-              ))}
+            <span className="flex flex-none items-center gap-1" title={item.rec.map((r) => r.label + (r.q ? ` (${r.q}×)` : "")).join(", ")}>
+              <span className="max-w-[9rem] truncate rounded-full bg-leaf/15 px-2 py-0.5 text-[11px] font-bold text-leaf">
+                {item.rec[0].q ? `${item.rec[0].q}× ` : ""}
+                {item.rec[0].label}
+              </span>
+              {item.rec.length > 1 && <span className="rounded-full bg-leaf/15 px-1.5 py-0.5 text-[11px] font-bold text-leaf">+{item.rec.length - 1}</span>}
             </span>
           )}
         </button>
