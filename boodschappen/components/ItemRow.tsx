@@ -130,6 +130,16 @@ function ItemRow({ item, who, onToggle, onDelete }: Props) {
             {item.text}
             <span ref={strike} className="absolute left-0 top-1/2 h-[2px] w-full origin-left bg-ink" style={{ transform: `scaleX(${item.done ? 1 : 0})` }} />
           </span>
+          {item.rec && item.rec.length > 0 && (
+            <span className="mt-1 flex flex-wrap gap-1">
+              {item.rec.map((r) => (
+                <span key={r.id} className="max-w-[11rem] truncate rounded-full bg-leaf/15 px-2 py-0.5 text-[11px] font-bold leading-tight text-leaf">
+                  {r.label}
+                  {r.q ? ` · ${r.q}×` : ""}
+                </span>
+              ))}
+            </span>
+          )}
         </button>
 
         {item.qty > 1 && <span className="rounded-full bg-sun/50 px-2 py-0.5 text-sm font-bold tabular-nums">{item.qty}×</span>}

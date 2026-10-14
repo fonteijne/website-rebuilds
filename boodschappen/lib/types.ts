@@ -9,7 +9,7 @@ export type Item = {
   by: string; // user id
   at: number;
   doneAt?: number;
-  rec?: { id: string; label: string }[]; // recepten waaruit dit item komt
+  rec?: { id: string; label: string; q?: number }[]; // recepten waaruit dit item komt
   man?: boolean; // ook los toegevoegd: blijft staan als het recept eraf gaat
 };
 

@@ -24,12 +24,13 @@ export async function readList(): Promise<ListPayload> {
 export async function addItem(raw: string, user: User, clientId?: string, recipe?: { id: string; label: string }): Promise<Item | null> {
   const { text, qty } = parseItem(raw);
   if (!text) return null;
+  const tag = recipe && { ...recipe, ...(qty > 1 ? { q: qty } : {}) };
   const all = await db().hgetall<Item>("items");
   const key = normKey(text);
   const dupe = Object.values(all).find((i) => normKey(i.text) === key);
   if (dupe) {
     // Staat er al: terug op de lijst zetten i.p.v. dubbel toevoegen
-    const rec = recipe && !dupe.rec?.some((r) => r.id === recipe.id) ? [...(dupe.rec ?? []), recipe] : dupe.rec;
+    const rec = recipe && !dupe.rec?.some((r) => r.id === recipe.id) ? [...(dupe.rec ?? []), tag!] : dupe.rec;
     const man = recipe ? dupe.man || !dupe.rec?.length : dupe.rec?.length ? true : dupe.man;
     const next: Item = { ...dupe, rec, man, done: false, doneAt: undefined, qty: dupe.done ? qty : dupe.qty + (qty > 1 ? qty : 0), by: user.id };
     await db().hset("items", dupe.id, next);
@@ -37,7 +38,7 @@ export async function addItem(raw: string, user: User, clientId?: string, recipe
     await bump();
     return next;
   }
-  const item: Item = { id: clientId && /^[a-z0-9-]{6,24}$/.test(clientId) && !all[clientId] ? clientId : crypto.randomUUID().slice(0, 12), text, qty, cat: categorize(text), done: false, by: user.id, at: Date.now(), ...(recipe ? { rec: [recipe] } : {}) };
+  const item: Item = { id: clientId && /^[a-z0-9-]{6,24}$/.test(clientId) && !all[clientId] ? clientId : crypto.randomUUID().slice(0, 12), text, qty, cat: categorize(text), done: false, by: user.id, at: Date.now(), ...(tag ? { rec: [tag] } : {}) };
   await db().hset("items", item.id, item);
   await db().zincr("hist", text, 1);
   await bump();
