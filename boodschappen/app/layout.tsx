@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   title: "Boodschappen",
   description: "Gedeelde boodschappenlijst voor twee.",
   appleWebApp: { capable: true, title: "Boodschappen", statusBarStyle: "default" },
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };
 
 export const viewport: Viewport = {
