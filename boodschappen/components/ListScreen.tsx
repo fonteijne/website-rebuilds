@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Item, ListPayload, Recipe, User } from "@/lib/types";
 import { api, colorFor } from "@/lib/api";
 import { CATEGORIES, categorize, normKey, parseItem } from "@/lib/categories";
@@ -14,11 +14,41 @@ import SplitText from "./reactbits/SplitText";
 type FlipState = ReturnType<typeof Flip.getState>;
 const POLL_MS = 3000;
 
+const same = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (typeof a !== "object" || typeof b !== "object" || !a || !b) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a).filter((k) => (a as Record<string, unknown>)[k] !== undefined);
+  const kb = Object.keys(b).filter((k) => (b as Record<string, unknown>)[k] !== undefined);
+  return ka.length === kb.length && ka.every((k) => same((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+};
+
+/**
+ * Hergebruik ongewijzigde objecten uit de vorige stand, zodat gememoiseerde rijen
+ * niet opnieuw renderen. Geeft `prev` terug als er inhoudelijk niets veranderd is.
+ */
+function share(prev: ListPayload | null, next: ListPayload): ListPayload {
+  if (!prev) return next;
+  const old = new Map(prev.items.map((i) => [i.id, i]));
+  let changed = prev.items.length !== next.items.length;
+  const items = next.items.map((i, n) => {
+    const o = old.get(i.id);
+    const keep = o && same(o, i) ? o : i;
+    if (keep !== prev.items[n]) changed = true;
+    return keep;
+  });
+  const suggestions = same(prev.suggestions, next.suggestions) ? prev.suggestions : next.suggestions;
+  const members = same(prev.members, next.members) ? prev.members : next.members;
+  if (!changed && suggestions === prev.suggestions && members === prev.members) return prev;
+  return { rev: next.rev, items: changed ? items : prev.items, suggestions, members };
+}
+
 export default function ListScreen({ me, onLogout }: { me: User; onLogout: () => void }) {
   const root = useRef<HTMLDivElement>(null);
   const hero = useRef<HTMLElement>(null);
   const [data, setData] = useState<ListPayload | null>(null);
-  const [text, setText] = useState("");
+  const dataRef = useRef(data);
+  dataRef.current = data;
   const [settings, setSettings] = useState(false);
   const [recipes, setRecipes] = useState(false);
   const [view, setViewState] = useState<"cat" | "rec">("cat");
@@ -28,7 +58,6 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
   const rev = useRef(-1);
   const firstRender = useRef(true);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   /** Alle lijstwijzigingen lopen hierdoor: stand vastleggen -> state wijzigen -> Flip animeert het verschil. */
   const commit = useCallback((updater: (d: ListPayload) => ListPayload) => {
@@ -55,8 +84,11 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
       const res = await api<ListPayload & { unchanged?: boolean }>(`/api/items?since=${rev.current}`);
       if (res.unchanged || pending.current > 0) return;
       rev.current = res.rev;
-      commit(() => res as ListPayload);
-      setData((d) => d ?? (res as ListPayload));
+      const next = share(dataRef.current, res as ListPayload);
+      // Niets veranderd (bv. bevestiging van een optimistische mutatie): geen render, geen Flip.
+      if (next === dataRef.current) return;
+      if (dataRef.current) commit(() => next);
+      else setData(next);
     } catch {
       /* offline of sessie verlopen: volgende poll probeert opnieuw */
     }
@@ -185,18 +217,10 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
     showToast(`${n} afgevinkt${n === 1 ? "" : "e"} item${n === 1 ? "" : "s"} gewist`);
   };
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    add(text);
-    setText("");
-    inputRef.current?.focus();
-  };
-
   // --- afgeleide data ---
-  const items = data?.items ?? [];
-  const active = items.filter((i) => !i.done);
-  const done = items.filter((i) => i.done).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0));
+  const items = useMemo(() => data?.items ?? [], [data]);
+  const active = useMemo(() => items.filter((i) => !i.done), [items]);
+  const done = useMemo(() => items.filter((i) => i.done).sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0)), [items]);
   const groups = useMemo(
     () => CATEGORIES.map((c) => ({ ...c, items: active.filter((i) => i.cat === c.id) })).filter((g) => g.items.length),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,6 +246,8 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
   const total = items.length;
   const pct = total ? done.length / total : 0;
   const who = (id: string) => data?.members[id] ?? "?";
+  const closeRecipes = useCallback(() => setRecipes(false), []);
+  const closeSettings = useCallback(() => setSettings(false), []);
 
   // --- animaties ---
   const counter = useRef({ v: 0 });
@@ -287,7 +313,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
 
       {/* compacte balk */}
       <div className="mini-bar invisible fixed inset-x-0 top-0 z-30 mx-auto max-w-md px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
-        <div className="card flex items-center gap-3 !rounded-2xl px-4 py-2.5 backdrop-blur">
+        <div className="card flex items-center gap-3 !rounded-2xl px-4 py-2.5">
           <span className="font-display text-lg font-semibold">Boodschappen</span>
           <span className="ml-auto text-sm font-bold tabular-nums">
             {done.length}/{total}
@@ -314,7 +340,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
             <Avatar name={mine} id={me.id} onClick={() => setSettings(true)} size={40} />
           </div>
         </div>
-        <div className="hero-title">
+        <div className="hero-title will-change-transform">
           <SplitText text="Boodschappen" tag="h1" textAlign="left" className="font-display text-[clamp(2.6rem,12vw,3.4rem)] font-semibold leading-none tracking-tight" delay={40} duration={0.9} rootMargin="0px" />
         </div>
         <div className="mt-4">
@@ -405,39 +431,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
       </main>
 
       {/* toevoegen: onderaan, binnen duimbereik */}
-      <div className="add-bar fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-6" style={{ background: "linear-gradient(to top, var(--bg) 55%, transparent)" }}>
-        {data && data.suggestions.length > 0 && (
-          <div className="-mx-3 mb-2 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none]" data-lenis-prevent-wheel aria-label="Vaak gekocht">
-            {data.suggestions.slice(0, 8).map((s) => (
-              <button key={s} className="chip" onClick={() => add(s)}>
-                + {s}
-              </button>
-            ))}
-          </div>
-        )}
-        <form onSubmit={submit} className="card flex items-center gap-2 !rounded-full p-1.5 pl-5">
-          <label htmlFor="new-item" className="sr-only">
-            Wat moet er op de lijst?
-          </label>
-          <input
-            id="new-item"
-            ref={inputRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Wat moet er op de lijst? (bv. 2x melk)"
-            enterKeyHint="done"
-            autoComplete="off"
-            autoCapitalize="sentences"
-            maxLength={60}
-            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted"
-          />
-          <button className="btn btn-brand !min-h-11 !w-11 !px-0" aria-label="Toevoegen" disabled={!text.trim()}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-        </form>
-      </div>
+      <AddBar suggestions={data?.suggestions} onAdd={add} />
 
       {toast && (
         <div className="toast fixed inset-x-0 bottom-36 z-50 mx-auto flex w-fit max-w-[90vw] items-center gap-3 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-bg shadow-xl" role="status">
@@ -452,7 +446,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
 
       <RecipesSheet
         open={recipes}
-        onClose={() => setRecipes(false)}
+        onClose={closeRecipes}
         onList={onListCount}
         onRemove={(r: Recipe) => removeRecipe(r)}
         onAdded={(label, n) => {
@@ -461,10 +455,60 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
           showToast(`${label}: ${n} ingrediënt${n === 1 ? "" : "en"} op de lijst`);
         }}
       />
-      <SettingsSheet me={me} open={settings} onClose={() => setSettings(false)} onLogout={onLogout} />
+      <SettingsSheet me={me} open={settings} onClose={closeSettings} onLogout={onLogout} />
     </div>
   );
 }
+
+/** Eigen state voor het invoerveld: typen rendert alleen deze balk, niet de hele lijst. */
+const AddBar = memo(function AddBar({ suggestions, onAdd }: { suggestions?: string[]; onAdd: (raw: string) => void }) {
+  const [text, setText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text);
+    setText("");
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="add-bar fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-6" style={{ background: "linear-gradient(to top, var(--bg) 55%, transparent)" }}>
+      {suggestions && suggestions.length > 0 && (
+        <div className="-mx-3 mb-2 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none]" data-lenis-prevent-wheel aria-label="Vaak gekocht">
+          {suggestions.slice(0, 8).map((s) => (
+            <button key={s} className="chip" onClick={() => onAdd(s)}>
+              + {s}
+            </button>
+          ))}
+        </div>
+      )}
+      <form onSubmit={submit} className="card flex items-center gap-2 !rounded-full p-1.5 pl-5">
+        <label htmlFor="new-item" className="sr-only">
+          Wat moet er op de lijst?
+        </label>
+        <input
+          id="new-item"
+          ref={inputRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Wat moet er op de lijst? (bv. 2x melk)"
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCapitalize="sentences"
+          maxLength={60}
+          className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted"
+        />
+        <button className="btn btn-brand !min-h-11 !w-11 !px-0" aria-label="Toevoegen" disabled={!text.trim()}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      </form>
+    </div>
+  );
+});
 
 function Avatar({ name, id, size, onClick }: { name: string; id: string; size: number; onClick: () => void }) {
   return (

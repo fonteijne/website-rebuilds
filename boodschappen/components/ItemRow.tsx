@@ -18,6 +18,7 @@ const SWIPE_DELETE = 90;
 function ItemRow({ item, who, onToggle, onDelete }: Props) {
   const li = useRef<HTMLLIElement>(null);
   const fg = useRef<HTMLDivElement>(null);
+  const delBg = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLSpanElement>(null);
   const check = useRef<SVGPathElement>(null);
   const strike = useRef<HTMLSpanElement>(null);
@@ -59,7 +60,7 @@ function ItemRow({ item, who, onToggle, onDelete }: Props) {
       else return;
     }
     gsap.set(fg.current, { x: Math.min(0, dx) * 0.9 });
-    gsap.set(li.current!.querySelector(".del-bg"), { opacity: Math.min(1, -dx / SWIPE_DELETE) });
+    gsap.set(delBg.current, { opacity: Math.min(1, -dx / SWIPE_DELETE) });
   };
   const up = (e: React.PointerEvent) => {
     const d = drag.current;
@@ -74,7 +75,7 @@ function ItemRow({ item, who, onToggle, onDelete }: Props) {
       gsap.to(fg.current, { x: -window.innerWidth, duration: 0.25, ease: "power2.in", onComplete: () => onDelete(item) });
     } else {
       gsap.to(fg.current, { x: 0, duration: 0.5, ease: "elastic.out(1, 0.55)" });
-      gsap.to(li.current!.querySelector(".del-bg"), { opacity: 0, duration: 0.2 });
+      gsap.to(delBg.current, { opacity: 0, duration: 0.2 });
     }
     // Voorkom dat het loslaten als klik telt
     setTimeout(() => (drag.current.moved = false), 0);
@@ -91,7 +92,7 @@ function ItemRow({ item, who, onToggle, onDelete }: Props) {
 
   return (
     <li ref={li} data-flip data-flip-id={`i-${item.id}`} className="relative list-none">
-      <div className="del-bg absolute inset-0 flex items-center justify-end rounded-[18px] bg-brand pr-6 text-white opacity-0" aria-hidden>
+      <div ref={delBg} className="del-bg absolute inset-0 flex items-center justify-end rounded-[18px] bg-brand pr-6 text-white opacity-0" aria-hidden>
         <TrashIcon />
       </div>
       <div
