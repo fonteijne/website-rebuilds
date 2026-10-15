@@ -11,13 +11,15 @@ export interface DB {
   getdel<T>(key: string): Promise<T | null>;
   incr(key: string): Promise<number>;
   hset(key: string, field: string, value: unknown): Promise<void>;
+  hsetMany(key: string, values: Record<string, unknown>): Promise<void>;
   hget<T>(key: string, field: string): Promise<T | null>;
   hgetall<T>(key: string): Promise<Record<string, T>>;
-  hdel(key: string, field: string): Promise<void>;
+  hdel(key: string, ...fields: string[]): Promise<void>;
   sadd(key: string, member: string): Promise<void>;
   srem(key: string, member: string): Promise<void>;
   smembers(key: string): Promise<string[]>;
   zincr(key: string, member: string, by: number): Promise<void>;
+  zincrMany(key: string, members: string[]): Promise<void>;
   ztop(key: string, n: number): Promise<string[]>;
 }
 
@@ -40,12 +42,15 @@ function upstash(): DB {
     async hset(k, f, v) {
       await r.hset(k, { [f]: v as never });
     },
+    async hsetMany(k, values) {
+      await r.hset(k, values as never);
+    },
     hget: (k, f) => r.hget(k, f),
     async hgetall(k) {
       return ((await r.hgetall(k)) ?? {}) as never;
     },
-    async hdel(k, f) {
-      await r.hdel(k, f);
+    async hdel(k, ...f) {
+      if (f.length) await r.hdel(k, ...f);
     },
     async sadd(k, m) {
       await r.sadd(k, m);
@@ -56,6 +61,12 @@ function upstash(): DB {
     smembers: (k) => r.smembers(k),
     async zincr(k, m, by) {
       await r.zincrby(k, by, m);
+    },
+    async zincrMany(k, members) {
+      if (!members.length) return;
+      const p = r.pipeline();
+      for (const m of members) p.zincrby(k, 1, m);
+      await p.exec();
     },
     ztop: (k, n) => r.zrange(k, 0, n - 1, { rev: true }) as Promise<string[]>,
   };
@@ -105,6 +116,11 @@ function memory(): DB {
       h.set(f, clone(v));
       m.set(k, h);
     },
+    async hsetMany(k, values) {
+      const h = hash(k);
+      for (const [f, v] of Object.entries(values)) h.set(f, clone(v));
+      m.set(k, h);
+    },
     async hget<T>(k: string, f: string) {
       const v = hash(k).get(f);
       return (v === undefined ? null : clone(v)) as T | null;
@@ -112,8 +128,9 @@ function memory(): DB {
     async hgetall<T>(k: string) {
       return Object.fromEntries([...hash(k).entries()].map(([a, b]) => [a, clone(b)])) as Record<string, T>;
     },
-    async hdel(k, f) {
-      hash(k).delete(f);
+    async hdel(k, ...f) {
+      const h = hash(k);
+      for (const x of f) h.delete(x);
     },
     async sadd(k, x) {
       const s = (m.get(k) as Set<string>) ?? new Set<string>();
@@ -129,6 +146,11 @@ function memory(): DB {
     async zincr(k, x, by) {
       const z = (m.get(k) as Map<string, number>) ?? new Map<string, number>();
       z.set(x, (z.get(x) ?? 0) + by);
+      m.set(k, z);
+    },
+    async zincrMany(k, members) {
+      const z = (m.get(k) as Map<string, number>) ?? new Map<string, number>();
+      for (const x of members) z.set(x, (z.get(x) ?? 0) + 1);
       m.set(k, z);
     },
     async ztop(k, n) {

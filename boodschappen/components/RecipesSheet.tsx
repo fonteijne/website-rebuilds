@@ -6,10 +6,10 @@ import type { Recipe } from "@/lib/types";
 import { api, friendly } from "@/lib/api";
 import { gsap, reducedMotion } from "@/lib/gsap";
 
-type Props = { open: boolean; onClose: () => void; onAdded: (label: string, count: number) => void; onList: Record<string, number>; onRemove: (r: Recipe) => void };
+type Props = { open: boolean; onClose: () => void; onAdd: (r: Recipe) => void; onList: Record<string, number>; onRemove: (r: Recipe) => void };
 type Draft = { id?: string; label: string; text: string };
 
-export default function RecipesSheet({ open, onClose, onAdded, onList, onRemove }: Props) {
+export default function RecipesSheet({ open, onClose, onAdd, onList, onRemove }: Props) {
   const sheet = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
@@ -86,19 +86,10 @@ export default function RecipesSheet({ open, onClose, onAdded, onList, onRemove 
     }
   };
 
-  const addToList = async (r: Recipe) => {
-    setBusy(r.id);
-    setMsg("");
-    try {
-      const res = await api<{ added: number }>(`/api/recipes/${r.id}/add`, { method: "POST" });
-      navigator.vibrate?.(14);
-      onAdded(r.label, res.added);
-      onClose();
-    } catch (err) {
-      setMsg(friendly(err));
-    } finally {
-      setBusy(null);
-    }
+  // Direct: de lijst werkt optimistisch bij, de server bevestigt op de achtergrond.
+  const addToList = (r: Recipe) => {
+    onAdd(r);
+    onClose();
   };
 
   const remove = async (r: Recipe) => {
@@ -182,8 +173,8 @@ export default function RecipesSheet({ open, onClose, onAdded, onList, onRemove 
                         Haal van lijst · {onList[r.id]}
                       </button>
                     ) : (
-                      <button className="btn btn-brand !min-h-11 flex-1 text-sm" disabled={busy === r.id} onClick={() => addToList(r)}>
-                        {busy === r.id ? "Toevoegen…" : "Zet op lijst"}
+                      <button className="btn btn-brand !min-h-11 flex-1 text-sm" onClick={() => addToList(r)}>
+                        Zet op lijst
                       </button>
                     )}
                     <button className="rounded-full px-3 py-2 text-sm font-bold text-ink2 hover:bg-line" onClick={() => setDraft({ id: r.id, label: r.label, text: r.ingredients.join("\n") })}>

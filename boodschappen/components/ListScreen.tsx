@@ -2,7 +2,8 @@
 
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Item, ListPayload, Recipe, User } from "@/lib/types";
-import { api, colorFor } from "@/lib/api";
+import { api, colorFor, friendly } from "@/lib/api";
+import { mergeAdd } from "@/lib/merge";
 import { CATEGORIES, categorize, normKey, parseItem } from "@/lib/categories";
 import { gsap, Flip, ScrollTrigger, useGSAP, reducedMotion } from "@/lib/gsap";
 import Backdrop from "./Backdrop";
@@ -41,6 +42,19 @@ function share(prev: ListPayload | null, next: ListPayload): ListPayload {
   const members = same(prev.members, next.members) ? prev.members : next.members;
   if (!changed && suggestions === prev.suggestions && members === prev.members) return prev;
   return { rev: next.rev, items: changed ? items : prev.items, suggestions, members };
+}
+
+function withRecipe(d: ListPayload, r: Recipe, ids: string[], by: string) {
+  const all: Record<string, Item> = Object.fromEntries(d.items.map((i) => [i.id, i]));
+  const touched = new Set<string>();
+  r.ingredients.forEach((raw, k) => {
+    const it = mergeAdd(all, raw, by, ids[k], { id: r.id, label: r.label });
+    if (it) touched.add(it.id);
+  });
+  const keys = new Set([...touched].map((id) => normKey(all[id].text)));
+  const known = new Set(d.items.map((i) => i.id));
+  const items = [...d.items.map((i) => all[i.id]), ...[...touched].filter((id) => !known.has(id)).map((id) => all[id])];
+  return { n: touched.size, payload: { ...d, items, suggestions: d.suggestions.filter((s) => !keys.has(normKey(s))) } };
 }
 
 export default function ListScreen({ me, onLogout }: { me: User; onLogout: () => void }) {
@@ -189,6 +203,22 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
     },
     [mutate, add],
   );
+
+  /** Recept op de lijst: optimistisch (direct zichtbaar), met dezelfde samenvoeglogica als de server. */
+  const addRecipe = (r: Recipe) => {
+    const ids = r.ingredients.map(() => crypto.randomUUID().slice(0, 12));
+    const n = dataRef.current ? withRecipe(dataRef.current, r, ids, me.id).n : r.ingredients.length;
+    mutate(
+      (d) => withRecipe(d, r, ids, me.id).payload,
+      () =>
+        api(`/api/recipes/${r.id}/add`, { method: "POST", json: { ids } }).catch((e) => {
+          showToast(friendly(e));
+          throw e;
+        }),
+    );
+    navigator.vibrate?.(14);
+    showToast(`${r.label}: ${n} ingrediënt${n === 1 ? "" : "en"} op de lijst`);
+  };
 
   const removeRecipe = (r: { id: string; label: string }) => {
     const n = data?.items.filter((i) => i.rec?.some((x) => x.id === r.id) && !(i.man || (i.rec?.length ?? 0) > 1)).length ?? 0;
@@ -449,11 +479,7 @@ export default function ListScreen({ me, onLogout }: { me: User; onLogout: () =>
         onClose={closeRecipes}
         onList={onListCount}
         onRemove={(r: Recipe) => removeRecipe(r)}
-        onAdded={(label, n) => {
-          rev.current = -1;
-          load();
-          showToast(`${label}: ${n} ingrediënt${n === 1 ? "" : "en"} op de lijst`);
-        }}
+        onAdd={addRecipe}
       />
       <SettingsSheet me={me} open={settings} onClose={closeSettings} onLogout={onLogout} />
     </div>

@@ -12,17 +12,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (me instanceof NextResponse) return me;
   const { id } = await params;
   const all = await db().hgetall<Item>(K(me.fam).items);
-  let removed = 0;
+  const drop: string[] = [];
+  const keep: Record<string, Item> = {};
   for (const it of Object.values(all)) {
     if (!it.rec?.some((r) => r.id === id)) continue;
     const rec = it.rec.filter((r) => r.id !== id);
-    if (!rec.length && !it.man) {
-      await db().hdel(K(me.fam).items, it.id);
-      removed++;
-    } else {
-      await db().hset(K(me.fam).items, it.id, { ...it, rec: rec.length ? rec : undefined });
-    }
+    if (!rec.length && !it.man) drop.push(it.id);
+    else keep[it.id] = { ...it, rec: rec.length ? rec : undefined };
   }
+  // In één ronde i.p.v. een Redis-aanvraag per item.
+  await Promise.all([db().hdel(K(me.fam).items, ...drop), Object.keys(keep).length ? db().hsetMany(K(me.fam).items, keep) : null]);
   await bump(me.fam);
+  const removed = drop.length;
   return json({ removed });
 }
