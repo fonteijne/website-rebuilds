@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/* Huisstijl van de originele site: #FF0064 roze, #1F7FFC blauw, #F9F9F9 tekst, #1D1D1B accent, Montserrat. */
+@theme {
+  --color-pink: #ff0064;
+  --color-blue: #1f7ffc;
+  --color-paper: #f9f9f9;
+  --color-ink: #1d1d1b;
+  --color-coal: #141414;
+  --color-smoke: #242424;
+  --color-mist: #afafaf;
+
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --text-mega: clamp(4.25rem, 19vw, 17rem);
+  --text-giant: clamp(3rem, 12vw, 11rem);
+}
+
+@layer base {
+  html {
+    background: #000;
+    color: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scrollbar-color: var(--color-pink) #000;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: #000;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-pink);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 3px;
+  }
+
+  img {
+    user-select: none;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+@layer components {
+  /* Het typografische motief van de originele site: zwaar woord + gespatieerd woord. */
+  .spaced {
+    letter-spacing: 0.45em;
+    margin-right: -0.45em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .kicker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+  }
+
+  .container-x {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+    max-width: 90rem;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 2.5rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    .container-x {
+      padding-inline: 4rem;
+    }
+  }
+
+  /* "Ghost"-tekst: text-stroke geeft artefacten op overlappende contouren van Montserrat, dus een getinte vulling. */
+  .text-ghost {
+    color: rgb(249 249 249 / 0.14);
+  }
+
+  .prose-ba p + p {
+    margin-top: 1.1em;
+  }
+
+  .link-underline {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.5s var(--ease-out-expo);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+/* Elementen die door GSAP worden onthuld blijven zichtbaar zonder JS. */
+.js [data-reveal] {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    visibility: visible !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
