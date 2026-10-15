@@ -1,0 +1,303 @@
+/* ==========================================================================
+   Base: reset, type, buttons, utilities (phone first)
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+html.is-locked {
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+body::before {
+  /* the original site's sand texture, kept as a whisper */
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/img/sand.webp') center / cover;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: -1;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+::selection {
+  background: var(--saffron);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 3px solid var(--saffron);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: max(var(--gutter), var(--safe-left)) max(var(--gutter), var(--safe-right));
+}
+
+@media (min-width: 900px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+/* ==========================================================================
+   Type
+   ========================================================================== */
+.display {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  /* 48px on a 360px phone, 8.4vw from ~570px up */
+  font-size: clamp(3rem, 8.4vw, 8.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+.display--md {
+  font-size: clamp(2.6rem, 5.6vw, 5.5rem);
+}
+.display em,
+.display--light em {
+  font-family: var(--f-script);
+  font-style: normal;
+  text-transform: none;
+  color: var(--chili);
+  font-size: 0.82em;
+  letter-spacing: 0;
+  padding-inline: 0.04em;
+}
+.display--light {
+  color: var(--paper);
+}
+.display--light em {
+  color: var(--saffron-light);
+}
+.rt-line {
+  padding-bottom: 0.06em;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--chili);
+  margin-bottom: 1.2rem;
+}
+.kicker::before {
+  content: '';
+  flex: none;
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+}
+.kicker--light {
+  color: var(--saffron-light);
+}
+.kicker__tag {
+  background: var(--chili);
+  color: var(--paper);
+  padding: 0.3em 0.8em;
+  border-radius: 99px;
+  transform: rotate(-3deg);
+}
+.lead {
+  font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+  color: var(--ink-soft);
+  max-width: 34em;
+}
+
+/* ==========================================================================
+   Buttons & links
+   ========================================================================== */
+.btn {
+  --bg: var(--ink);
+  --fg: var(--paper);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  min-height: var(--tap);
+  padding: 0.95em 1.6em;
+  border-radius: 999px;
+  border: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.4s var(--ease-back), color 0.3s;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--saffron);
+  border-radius: inherit;
+  transform: translateY(101%);
+  transition: transform 0.55s var(--ease-out);
+  z-index: -1;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn svg {
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.4s;
+}
+.btn--red {
+  --bg: var(--chili);
+}
+.btn--dark {
+  --bg: var(--ink);
+}
+.btn--lg {
+  font-size: 1rem;
+  padding: 1.1em 1.9em;
+}
+.btn[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Text link with a 2px underline. Vertical padding makes the tap target 44px+;
+   the underline is positioned 6px up so it still sits just under the text. */
+.link-underline {
+  position: relative;
+  display: inline-block;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 10px 0;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 6px) / 100% 2px no-repeat;
+  transition: background-size 0.5s var(--ease-out);
+}
+.link-underline:active {
+  opacity: 0.7;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chips li {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4em 0.9em;
+  border-radius: 99px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+}
+
+@media (min-width: 600px) {
+  .btn--lg {
+    font-size: 1.08rem;
+  }
+}
+
+/* Hover effects only where a real pointer can hover (no sticky hover on touch). */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover::after {
+    transform: translateY(0);
+  }
+  .btn:hover {
+    color: var(--ink);
+  }
+  .btn:hover svg {
+    transform: translateX(4px);
+  }
+  .link-underline:hover {
+    background-size: 0% 2px;
+    background-position: 100% calc(100% - 6px);
+  }
+}
+/* Touch: brief fill on press instead of the hover wipe. */
+@media (hover: none) {
+  .btn:active::after {
+    transform: translateY(0);
+    transition-duration: 0.2s;
+  }
+  .btn:active {
+    color: var(--ink);
+  }
+}
+
+/* ==========================================================================
+   Sunburst
+   ========================================================================== */
+.sunburst {
+  pointer-events: none;
+}
+.sunburst__ray {
+  fill: currentColor;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

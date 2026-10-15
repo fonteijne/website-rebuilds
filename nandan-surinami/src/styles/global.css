@@ -1,0 +1,26 @@
+/* ==========================================================================
+   H. Nandan Surinami — stylesheet entry (imported by src/main.jsx).
+   Mobile-first: unqueried rules are the phone layout (360–430px); larger
+   layouts are layered on with min-width queries at 600 / 900 / 1100px.
+   900px must stay in sync with gsap.matchMedia('(min-width: 900px)') in
+   Boemboe.jsx, Dishes.jsx and Hero.jsx (pinned sections vs. swipe rows).
+   Hover-only effects live in @media (hover: hover) and (pointer: fine).
+   Vite inlines these @imports at build time.
+   ========================================================================== */
+@import './tokens.css';
+@import './base.css';
+@import './sections/preloader.css';
+@import './sections/nav.css';
+@import './sections/hero.css';
+@import './sections/marquee.css';
+@import './sections/boemboe.css';
+@import './sections/swipe-dots.css';
+@import './sections/recipe.css';
+@import './sections/values.css';
+@import './sections/assortment.css';
+@import './sections/dishes.css';
+@import './sections/retailers.css';
+@import './sections/story.css';
+@import './sections/video.css';
+@import './sections/contact.css';
+@import './sections/footer.css';

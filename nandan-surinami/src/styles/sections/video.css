@@ -1,0 +1,91 @@
+/* ==========================================================================
+   Video (YouTube facade)
+   ========================================================================== */
+.video {
+  padding: clamp(72px, 14vh, 160px) 0 0;
+}
+.video__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow: 0 50px 100px -50px rgba(42, 24, 16, 0.6);
+}
+.video__frame iframe,
+.video__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+.video__overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at center, rgba(42, 24, 16, 0.1), rgba(42, 24, 16, 0.45));
+}
+.video__play {
+  position: relative;
+  /* fits inside the 16:9 frame on a 360px phone (~185px tall) */
+  width: clamp(104px, 14vw, 180px);
+  height: clamp(104px, 14vw, 180px);
+  border-radius: 50%;
+  border: 0;
+  background: var(--chili);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  transition: transform 0.5s var(--ease-back), background-color 0.3s;
+}
+.video__play:active {
+  transform: scale(0.94);
+  background: var(--saffron);
+  color: var(--ink);
+}
+.video__play > svg {
+  position: absolute;
+  width: 34%;
+  fill: currentColor;
+  translate: 6% 0;
+}
+.video__circular.circular-text {
+  position: absolute;
+  inset: 6px;
+  width: auto;
+  height: auto;
+  color: currentColor;
+  margin: 0;
+}
+.video__circular.circular-text span {
+  font-family: var(--f-display);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+@media (min-width: 600px) {
+  .video__frame {
+    border-radius: 28px;
+  }
+  .video__play {
+    width: clamp(130px, 14vw, 180px);
+    height: clamp(130px, 14vw, 180px);
+  }
+  .video__circular.circular-text {
+    inset: 8px;
+  }
+  .video__circular.circular-text span {
+    font-size: 13px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .video__play:hover {
+    transform: scale(1.08);
+    background: var(--saffron);
+    color: var(--ink);
+  }
+}
