@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KNMI Assistent | KNMI.nl</title>
+<meta name="robots" content="noindex,nofollow">
 <meta name="description" content="Demo: een AI-assistent die vragen over weer, klimaat, seismologie en data beantwoordt met bronnen uit KNMI.nl.">
 <style>
 :root{
@@ -34,6 +35,7 @@ a:hover{color:var(--lintblauw)}
 img{max-width:100%}
 button{font-family:inherit}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.demo-strip{background:#0d405b;color:#fff;font-size:12px;text-align:center;padding:4px 16px}
 .skiplink{position:absolute;left:-9999px;top:0;background:var(--hemelblauw);color:#fff;padding:8px 16px;z-index:100}
 .skiplink:focus{left:16px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
@@ -276,9 +278,75 @@ pre.code-block .s{color:#f9e11e}
 .site-footer__legal .wrap{display:flex;flex-wrap:wrap;gap:20px;padding-top:12px;padding-bottom:12px}
 
 .disclaimer{font-size:13px;color:var(--grijs);margin:10px 0 0}
+
+/* ---------- Zoekpagina (opbouw geïnspireerd op AI-zoeken) ---------- */
+.ask-hero{text-align:center;padding:34px 0 12px}
+.ask-hero h1{font-family:var(--serif);font-weight:normal;font-size:46px;line-height:1.1;margin:0 0 12px;color:var(--lintblauw)}
+.ask-hero__sub{font-size:21px;color:var(--tekst);margin:0 0 24px}
+@media (max-width:700px){.ask-hero h1{font-size:34px}.ask-hero__sub{font-size:18px}}
+.searchbar{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--hemelblauw);padding:8px 8px 8px 18px;text-align:left}
+.searchbar:focus-within{outline:3px solid var(--cyaan);outline-offset:2px}
+.searchbar__spark{flex:none;color:var(--hemelblauw)}
+.searchbar__field{flex:1;position:relative;min-width:0}
+.searchbar__field input{width:100%;border:0;background:transparent;font:inherit;font-size:21px;color:var(--tekst);padding:20px 0 4px;outline:none}
+.searchbar__field input::-webkit-search-cancel-button{cursor:pointer}
+.searchbar__label{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:21px;color:#6e6e6e;pointer-events:none;transition:all .15s}
+.searchbar__field input:focus + .searchbar__label,.searchbar__field input:not(:placeholder-shown) + .searchbar__label{top:9px;transform:none;font-size:13px;color:var(--hemelblauw)}
+.searchbar__btn{flex:none;display:flex;align-items:center;gap:10px;background:var(--hemelblauw);color:#fff;border:0;font-size:18px;padding:13px 22px;cursor:pointer}
+.searchbar__btn:hover{background:var(--lintblauw)}
+@media (max-width:600px){.searchbar{padding-left:12px}.searchbar__spark{display:none}.searchbar__btn{padding:13px 14px;font-size:0;gap:0}.searchbar__btn svg{width:22px;height:22px}.searchbar__field input,.searchbar__label{font-size:18px}}
+.ask-hero .scope{border:0;margin:12px 0 0;padding:0;justify-content:center;font-size:14px}
+
+.results{padding:26px 0 10px}
+.results-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:56px;max-width:1080px;margin:0 auto}
+@media (max-width:960px){.results-grid{grid-template-columns:minmax(0,1fr);gap:24px}}
+.jump{display:inline-block;font-size:15px;margin:0 0 16px}
+.analyse__t{font-size:17px;margin:0 0 10px}
+.steps-list{list-style:none;margin:0 0 14px;padding:0;font-size:14px}
+.skel i{display:block;height:15px;margin:0 0 9px;background:linear-gradient(90deg,var(--lichtblauw) 0%,#f5f9fd 50%,var(--lichtblauw) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.results .steps{margin:0 0 18px}
+.results .steps ol{margin:10px 0 2px}
+.answer{font-size:18px;line-height:1.6}
+.cite{display:inline-flex;align-items:center;gap:6px;vertical-align:baseline;background:var(--lichtblauw);color:var(--donkerblauw);text-decoration:none;font-size:13px;font-weight:bold;line-height:1.3;padding:2px 4px 2px 8px;margin:0 2px}
+.cite:hover{background:var(--lichtblauw-2);color:var(--donkerblauw)}
+.cite b{background:var(--hemelblauw);color:#fff;border-radius:50%;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.feedback{border-top:0;padding-top:4px;margin:6px 0 22px;font-size:15px;color:var(--tekst)}
+.feedback button{text-transform:uppercase;font-size:13px;letter-spacing:.04em;padding:4px 12px;border-color:var(--hemelblauw);color:var(--hemelblauw)}
+.feedback button.is-on{background:var(--hemelblauw);color:#fff}
+.refine h2{font-size:17px;margin:0 0 10px}
+.refine button{display:block;width:100%;text-align:left;background:var(--vlak);border:0;border-left:4px solid var(--hemelblauw);padding:12px 14px;margin:0 0 8px;font-size:16px;color:var(--lintblauw);cursor:pointer;line-height:1.4}
+.refine button:hover{background:var(--lichtblauw)}
+
+.results-side > div{margin:0 0 22px}
+.side-cta h2{font-family:var(--serif);font-weight:normal;font-size:24px;color:var(--lintblauw);margin:0 0 12px}
+.btn--dark{background:var(--lintblauw)}
+.btn--dark:hover{background:var(--donkerblauw)}
+.ai-note{background:var(--lichtblauw);padding:20px 22px;font-size:15px;line-height:1.5}
+.ai-note h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:16px;color:var(--donkerblauw)}
+.ai-note p{margin:0 0 10px}
+.side-sources h2{font-family:var(--serif);font-weight:normal;font-size:24px;color:var(--lintblauw);margin:0 0 10px}
+.side-sources ol{list-style:none;margin:0;padding:0}
+.side-sources li a{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--lijn);text-decoration:none;font-size:15px;font-weight:bold;line-height:1.35}
+.side-sources li a:hover span{text-decoration:underline}
+.side-sources b{flex:none;background:var(--hemelblauw);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px}
+
+.hits{max-width:1080px;margin:34px auto 0;border-top:1px solid var(--lijn);padding-top:26px}
+.hits h2{font-family:var(--serif);font-weight:normal;font-size:28px;margin:0 0 16px}
+.hits ul{list-style:none;margin:0;padding:0}
+.hit{margin:0 0 12px}
+.hit a{display:flex;gap:20px;align-items:center;justify-content:space-between;border:1px solid var(--lijn);border-left:5px solid var(--hemelblauw);background:#fff;padding:16px 18px;text-decoration:none;color:var(--tekst)}
+.hit a:hover{background:#fafcfe;border-color:var(--hemelblauw)}
+.hit a:hover h3{text-decoration:underline}
+.hit__s{font-size:13px;color:var(--grijs)}
+.hit h3{font-size:19px;color:var(--hemelblauw);margin:2px 0 4px}
+.hit p{margin:0;font-size:15px;color:var(--tekst-2)}
+.hit__go{flex:none;width:40px;height:40px;background:var(--hemelblauw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+.examples{max-width:1080px;margin:30px auto 8px}
 </style>
 </head>
 <body>
+<div class="demo-strip">Conceptdemo van een AI-zoekfunctie, geen officiële KNMI-pagina. Antwoorden zijn voorbeeldantwoorden op basis van knmi.nl (16 oktober 2026).</div>
 <a class="skiplink" href="#mainBody">Naar de hoofd content</a>
 
 <header class="site-header">
@@ -322,28 +390,27 @@ pre.code-block .s{color:#f9e11e}
 
 <main id="mainBody">
   <div class="wrap">
-    <div class="breadcrumb"><a href="https://www.knmi.nl/home">Home</a><span>›</span>Vraag het KNMI</div>
+    <div class="breadcrumb"><a href="https://www.knmi.nl/home">Home</a><span>›</span>Zoeken</div>
 
-    <section class="assist-hero" id="assistent" aria-labelledby="assistTitle">
+    <section class="ask-hero" id="assistent" aria-labelledby="assistTitle">
       <h1 id="assistTitle">Vraag het KNMI</h1>
-      <p class="lead">Stel uw vraag over weer, waarschuwingen, klimaat, aardbevingen of data. De KNMI Assistent zoekt in actuele verwachtingen, waarnemingen en het kennis- &amp; datacentrum, en laat altijd zien waar het antwoord vandaan komt.</p>
-
-      <form class="askbox" id="askForm" autocomplete="off">
-        <label for="ask" class="visually-hidden">Stel uw vraag</label>
-        <textarea id="ask" rows="1" placeholder="Bijvoorbeeld: Wordt het droog in het weekend?"></textarea>
-        <button class="askbox__send" type="submit" id="sendBtn">
-          Vraag
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <p class="ask-hero__sub">Omschrijf in een paar woorden of een korte zin wat u zoekt.</p>
+      <form class="searchbar" id="askForm" role="search" autocomplete="off">
+        <svg class="searchbar__spark" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.5l1.6 4.6 4.6 1.6-4.6 1.6L9 14.9l-1.6-4.6-4.6-1.6 4.6-1.6z" fill="currentColor"/><path d="M17.5 12.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" fill="currentColor"/><path d="M5.5 16.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z" fill="currentColor"/></svg>
+        <div class="searchbar__field">
+          <input id="ask" type="search" placeholder=" " enterkeyhint="search">
+          <label for="ask" class="searchbar__label">Zoek of vraag…</label>
+        </div>
+        <button class="searchbar__btn" type="submit" id="sendBtn">Zoeken
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
         </button>
       </form>
-      <div class="askbox-meta">
-        <fieldset class="scope" style="border:0;margin:0;padding:0">
-          <legend class="visually-hidden">Zoek in</legend>
-          <label><input type="radio" name="scope" value="all" checked> Hele site</label>
-          <label><input type="radio" name="scope" value="kdc"> Kennis- &amp; datacentrum</label>
-          <label><input type="radio" name="scope" value="data"> Data &amp; API's</label>
-        </fieldset>
-      </div>
+      <fieldset class="scope">
+        <legend class="visually-hidden">Zoek in</legend>
+        <label><input type="radio" name="scope" value="all" checked> Hele site</label>
+        <label><input type="radio" name="scope" value="kdc"> Kennis- &amp; datacentrum</label>
+        <label><input type="radio" name="scope" value="data"> Data &amp; API's</label>
+      </fieldset>
     </section>
 
     <section class="examples" id="examples" aria-labelledby="exTitle">
@@ -351,45 +418,28 @@ pre.code-block .s{color:#f9e11e}
       <div class="capgrid" id="capgrid"></div>
     </section>
 
-    <section class="convo" id="convo" aria-live="polite">
-      <div class="convo-layout">
-        <div>
-          <div id="turns"></div>
-          <div class="followup-box">
-            <form class="askbox" id="askForm2" autocomplete="off">
-              <label for="ask2" class="visually-hidden">Stel een vervolgvraag</label>
-              <textarea id="ask2" rows="1" placeholder="Stel een vervolgvraag…"></textarea>
-              <button class="askbox__send" type="submit" id="sendBtn2">Vraag
-                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-              </button>
-            </form>
-            <p class="disclaimer">De KNMI Assistent gebruikt AI en kan fouten maken. Bij gevaarlijk weer gelden altijd de officiële <a href="https://www.knmi.nl/nederland-nu/weer/waarschuwingen">KNMI-waarschuwingen</a>.</p>
+    <section class="results" id="results" hidden>
+      <div class="results-grid">
+        <div class="results-main" id="resMain" aria-live="polite"></div>
+        <aside class="results-side" aria-label="Bij dit antwoord">
+          <div class="side-cta">
+            <h2>Zoekt u data of een dataset?</h2>
+            <a class="btn btn--dark" href="https://www.dataverkenner.knmi.nl/">Open de KNMI Dataverkenner
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></svg></a>
           </div>
-        </div>
-        <aside class="aside" aria-label="Over de assistent">
-          <div class="aside__block">
-            <h3>Eerder gevraagd</h3>
-            <ul class="history" id="history"></ul>
-            <p style="margin-top:10px"><button class="btn btn--ghost" type="button" onclick="resetConvo()" style="padding:6px 12px;font-size:14px">Nieuw gesprek</button></p>
+          <div class="ai-note">
+            <h3><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.5l1.6 4.6 4.6 1.6-4.6 1.6L9 14.9l-1.6-4.6-4.6-1.6 4.6-1.6z" fill="currentColor"/><path d="M17.5 12.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" fill="currentColor"/></svg> AI-gegenereerd antwoord</h3>
+            <p>Dit antwoord is met AI samengesteld uit openbare informatie van knmi.nl en actuele KNMI-gegevens. Het is niet gegarandeerd volledig, juist of actueel.</p>
+            <p>Bij gevaarlijk weer gelden altijd de officiële <a href="https://www.knmi.nl/nederland-nu/weer/waarschuwingen">KNMI-waarschuwingen</a>.</p>
+            <p style="margin:0">Lees meer over <a href="https://www.knmi.nl/privacy">ons gebruik van AI</a>.</p>
           </div>
-          <div class="aside__block">
-            <h3>Waar zoekt de assistent?</h3>
-            <ul>
-              <li>Weerverwachtingen en waarschuwingen</li>
-              <li>Neerslagradar en waarnemingen</li>
-              <li>Seismologie: aardbevingen en explosies</li>
-              <li>Kennis- &amp; datacentrum (uitleg, publicaties)</li>
-              <li>KNMI Data Platform en Open Data API</li>
-              <li>Nieuws en persberichten</li>
-            </ul>
-          </div>
-          <div class="aside__block aside__note">
-            <h3>Hoe werkt dit?</h3>
-            <p>De assistent plant zelf welke bronnen nodig zijn, haalt actuele gegevens op en vat ze samen. Elke stap is zichtbaar onder <em>Werkwijze</em>. Er worden geen persoonsgegevens opgeslagen.</p>
-            <p style="margin:0"><a href="https://www.knmi.nl/privacy">Privacy</a> · <a href="https://www.knmi.nl/over-het-knmi/contact/contactformulier">Feedback geven</a></p>
-          </div>
+          <div class="side-sources" id="sideSources"></div>
         </aside>
       </div>
+      <section class="hits" id="hits" aria-labelledby="hitsTitle">
+        <h2 id="hitsTitle"></h2>
+        <ul id="hitList"></ul>
+      </section>
     </section>
   </div>
 
@@ -474,28 +524,38 @@ pre.code-block .s{color:#f9e11e}
 
 const K = "https://www.knmi.nl";
 const SRC = {
-  verw:   {t:"Weerverwachting Nederland", s:"Nederland nu › Weer", u:K+"/nederland-nu/weer/verwachtingen"},
-  radar:  {t:"Neerslagradar", s:"Nederland nu › Actueel weer", u:K+"/nederland-nu/weer/actueel-weer/neerslagradar"},
-  pluim:  {t:"Weer- en klimaatpluim", s:"Waarschuwingen en verwachtingen", u:K+"/nederland-nu/weer/waarschuwingen-en-verwachtingen/weer-en-klimaatpluim"},
-  waarsch:{t:"Waarschuwingen", s:"Nederland nu › Weer", u:K+"/nederland-nu/weer/waarschuwingen"},
-  gericht:{t:"KNMI waarschuwt vanaf november gerichter voor gevaarlijk weer", s:"Nieuws · 14 oktober 2026", u:K+"/over-het-knmi/nieuws/knmi-waarschuwt-vanaf-november-gerichter/"},
-  app:    {t:"De KNMI-app", s:"Kennis- & datacentrum › Uitleg", u:K+"/kennis-en-datacentrum/uitleg/knmi-app"},
-  beving: {t:"Aardbevingen", s:"Nederland nu › Seismologie", u:K+"/nederland-nu/seismologie/aardbevingen"},
-  seismo: {t:"Seismologie", s:"Nederland nu", u:K+"/nederland-nu/seismologie"},
-  nino:   {t:"El Niño 2026-2027: waar verwachten we de grootste gevolgen?", s:"Nieuws · 7 oktober 2026", u:K+"/over-het-knmi/nieuws/el-nino-2026-2027-waar-verwachten-we-de-grootste-gevolgen/"},
-  ballon: {t:"Boven ons wordt het warmer, en nog hoger juist kouder", s:"Nieuws · 14 oktober 2026", u:K+"/over-het-knmi/nieuws/boven-ons-wordt-het-warmer-en-nog-hoger-juist-kouder/"},
-  klimaat:{t:"Klimaat", s:"KNMI.nl", u:K+"/klimaat"},
-  kdc:    {t:"Kennis- & datacentrum", s:"KNMI.nl", u:K+"/kennis-en-datacentrum"},
-  kdp:    {t:"KNMI Data Platform", s:"dataplatform.knmi.nl", u:"https://dataplatform.knmi.nl/"},
-  dv:     {t:"KNMI Dataverkenner", s:"dataverkenner.knmi.nl", u:"https://www.dataverkenner.knmi.nl/"},
-  klimato:{t:"Klimatologie", s:"Nederland nu", u:K+"/nederland-nu/klimatologie"},
-  openday:{t:"Open dag 2026: van weerballon tot seismoselfie", s:"Nieuws · 5 oktober 2026", u:K+"/over-het-knmi/nieuws/open-dag-2026-van-weerballon-tot-seismoselfie"},
-  over:   {t:"Over het KNMI", s:"KNMI.nl", u:K+"/over-het-knmi/over"},
-  vac:    {t:"Werken bij het KNMI", s:"Over het KNMI", u:K+"/over-het-knmi/vacatures"},
-  contact:{t:"Contactformulier", s:"Over het KNMI", u:K+"/over-het-knmi/contact/contactformulier"},
-  lucht:  {t:"Luchtvaart", s:"Nederland nu", u:K+"/nederland-nu/luchtvaart"},
-  mar:    {t:"Maritiem", s:"Nederland nu", u:K+"/nederland-nu/maritiem"},
-  carib:  {t:"Caribisch Nederland", s:"Waarschuwingen en verwachtingen", u:K+"/nederland-nu/weer/waarschuwingen-en-verwachtingen/caribisch-nederland"},
+  verw:   {t:"Weerverwachting Nederland", s:"Nederland nu › Weer", u:K+"/nederland-nu/weer/verwachtingen", d:"De weersverwachting voor vandaag, morgen en de komende dagen, met temperatuur, neerslag, wind en zon."},
+  radar:  {t:"Neerslagradar", s:"Nederland nu › Actueel weer", u:K+"/nederland-nu/weer/actueel-weer/neerslagradar", d:"Actuele neerslag boven Nederland en de verwachting voor de komende uren, elke vijf minuten bijgewerkt."},
+  pluim:  {t:"Weer- en klimaatpluim", s:"Waarschuwingen en verwachtingen", u:K+"/nederland-nu/weer/waarschuwingen-en-verwachtingen/weer-en-klimaatpluim", d:"De pluim laat zien hoe zeker de verwachting is, met de spreiding van temperatuur en neerslag over vijftien dagen."},
+  waarsch:{t:"Waarschuwingen", s:"Nederland nu › Weer", u:K+"/nederland-nu/weer/waarschuwingen", d:"Actuele waarschuwingen voor gevaarlijk weer in Nederland en de kustwateren: code geel, oranje en rood."},
+  gericht:{t:"KNMI waarschuwt vanaf november gerichter voor gevaarlijk weer", s:"Nieuws · 14 oktober 2026", u:K+"/over-het-knmi/nieuws/knmi-waarschuwt-vanaf-november-gerichter/", d:"Niet meer per provincie, maar voor flexibele gebieden. Op de kaart kunt u inzoomen om te zien of een waarschuwing voor uw plek geldt."},
+  app:    {t:"De KNMI-app", s:"Kennis- & datacentrum › Uitleg", u:K+"/kennis-en-datacentrum/uitleg/knmi-app", d:"Met de KNMI-app bent u voorbereid op gevaarlijk weer. Veelgestelde vragen over meldingen, locaties en privacy."},
+  beving: {t:"Aardbevingen", s:"Nederland nu › Seismologie", u:K+"/nederland-nu/seismologie/aardbevingen", d:"Recente aardbevingen en andere seismische registraties in en rond Nederland, met magnitude, diepte en type."},
+  seismo: {t:"Seismologie", s:"Nederland nu", u:K+"/nederland-nu/seismologie", d:"Het KNMI meet en duidt natuurlijke en geïnduceerde aardbevingen, explosies en andere trillingen."},
+  nino:   {t:"El Niño 2026-2027: waar verwachten we de grootste gevolgen?", s:"Nieuws · 7 oktober 2026", u:K+"/over-het-knmi/nieuws/el-nino-2026-2027-waar-verwachten-we-de-grootste-gevolgen/", d:"El Niño 2026-2027 is op weg om de sterkste te worden sinds het begin van de metingen. Wat betekent dat wereldwijd en voor Nederland?"},
+  ballon: {t:"Boven ons wordt het warmer, en nog hoger juist kouder", s:"Nieuws · 14 oktober 2026", u:K+"/over-het-knmi/nieuws/boven-ons-wordt-het-warmer-en-nog-hoger-juist-kouder/", d:"75 jaar weerballonmetingen boven De Bilt laten zien hoe de atmosfeer laag voor laag verandert."},
+  klimaat:{t:"Klimaat", s:"KNMI.nl", u:K+"/klimaat", d:"Hoe verandert het klimaat in Nederland en wereldwijd? Klimaatscenario's, onderzoek en uitleg van het KNMI."},
+  kdc:    {t:"Kennis- & datacentrum", s:"KNMI.nl", u:K+"/kennis-en-datacentrum", d:"Uitleg, publicaties, achtergronden en datasets over weer, klimaat en seismologie."},
+  kdp:    {t:"KNMI Data Platform", s:"dataplatform.knmi.nl", u:"https://dataplatform.knmi.nl/", d:"Open data van het KNMI: datasets downloaden via de website of automatisch via de Open Data API."},
+  dv:     {t:"KNMI Dataverkenner", s:"dataverkenner.knmi.nl", u:"https://www.dataverkenner.knmi.nl/", d:"Bekijk en vergelijk KNMI-data op kaarten en in grafieken, zonder te programmeren."},
+  klimato:{t:"Klimatologie", s:"Nederland nu", u:K+"/nederland-nu/klimatologie", d:"Maand- en seizoensoverzichten, daggegevens en klimaatnormalen van de KNMI-weerstations."},
+  openday:{t:"Open dag 2026: van weerballon tot seismoselfie", s:"Nieuws · 5 oktober 2026", u:K+"/over-het-knmi/nieuws/open-dag-2026-van-weerballon-tot-seismoselfie", d:"Zo'n 2500 bezoekers kwamen op 3 oktober naar het KNMI in De Bilt, tijdens het Weekend van de Wetenschap."},
+  over:   {t:"Over het KNMI", s:"KNMI.nl", u:K+"/over-het-knmi/over", d:"Het KNMI is het nationale kennisinstituut voor weer, klimaat en seismologie."},
+  vac:    {t:"Werken bij het KNMI", s:"Over het KNMI", u:K+"/over-het-knmi/vacatures", d:"Actuele vacatures bij het KNMI in De Bilt, van meteoroloog tot data-engineer."},
+  contact:{t:"Contactformulier", s:"Over het KNMI", u:K+"/over-het-knmi/contact/contactformulier", d:"Heeft u een vraag aan het KNMI? Neem contact op via het formulier."},
+  lucht:  {t:"Luchtvaart", s:"Nederland nu", u:K+"/nederland-nu/luchtvaart", d:"Weersinformatie en verwachtingen voor de luchtvaart."},
+  mar:    {t:"Maritiem", s:"Nederland nu", u:K+"/nederland-nu/maritiem", d:"Verwachtingen en waarschuwingen voor de scheepvaart, de Noordzee en de kustwateren."},
+  carib:  {t:"Caribisch Nederland", s:"Waarschuwingen en verwachtingen", u:K+"/nederland-nu/weer/waarschuwingen-en-verwachtingen/caribisch-nederland", d:"Verwachtingen en waarschuwingen voor Bonaire, Sint Eustatius en Saba."},
+  nieuws: {t:"Nieuws", s:"Over het KNMI", u:K+"/over-het-knmi/nieuws", d:"Het laatste nieuws van het KNMI over weer, klimaat en seismologie."},
+  pers:   {t:"Pers", s:"Over het KNMI", u:K+"/over-het-knmi/pers", d:"Informatie voor journalisten en het persnummer van het KNMI."},
+};
+/* Extra zoekresultaten per onderwerp (klassieke zoekresultaten onder het antwoord) */
+const MORE = {
+  verw:["radar","pluim","waarsch","klimato","app"], radar:["verw","pluim","waarsch","app"],
+  waarsch:["gericht","app","verw","mar"], gericht:["waarsch","app","nieuws","pers"],
+  beving:["seismo","kdc","dv"], nino:["klimaat","carib","ballon","kdc"], ballon:["klimaat","nino","kdc","klimato"],
+  kdp:["dv","kdc","klimato","radar"], klimato:["verw","klimaat","dv","kdp"], openday:["nieuws","over","pers"],
+  app:["waarsch","gericht","verw"], lucht:["verw","waarsch"], kdc:["klimaat","kdp","nieuws"], over:["nieuws","vac","contact"],
 };
 
 /* --- Data van knmi.nl, uitgifte 16/10/2026 11.32 uur --- */
@@ -548,8 +608,7 @@ const CAPS = [
 const $ = s => document.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let busy = false, turnN = 0;
-const history = [];
+let turnN = 0;
 
 function renderCaps(){
   $("#capgrid").innerHTML = CAPS.map(c => `
@@ -564,7 +623,7 @@ function renderCaps(){
 function sourcesHTML(keys){
   return `<div class="sources"><h4>Bronnen</h4><ol>${keys.map((k,i)=>{const s=SRC[k];return `<li><a href="${s.u}"><span class="n">${i+1}</span><span>${esc(s.t)}<small>${esc(s.s)}</small></span></a></li>`}).join("")}</ol></div>`;
 }
-const cite = n => `<sup><a href="#" onclick="return false" aria-label="bron ${n}">${n}</a></sup>`;
+const cite = n => `<cite data-n="${n}"></cite>`;
 
 /* --- Componenten --- */
 function forecastCard(){
@@ -818,98 +877,105 @@ function route(q){
   };
 }
 
-/* --- Weergave van een beurt --- */
-async function ask(q){
+/* --- Weergave: AI-antwoord + bronnen + klassieke zoekresultaten --- */
+let runId = 0;
+function citeify(html, srcKeys){
+  return html.replace(/<cite data-n="(\d+)"><\/cite>/g, (_, n) => {
+    const s = SRC[srcKeys[n-1]]; if(!s) return "";
+    return ` <a class="cite" href="${s.u}"><span>${esc(s.t)}</span><b>${n}</b></a>`;
+  });
+}
+function stepsHTML(steps){
+  return `<ol class="steps-list">${steps.map(s=>`<li class="step"><span class="step__ic"></span><span class="step__t">${s[0]} <code>${s[1]}</code></span><span class="step__ms"></span></li>`).join("")}</ol>`;
+}
+function hitsFor(r){
+  const keys = [...new Set([...r.src, ...(MORE[r.src[0]]||[]), "kdc"])].slice(0, 8);
+  return keys.map(k => SRC[k]);
+}
+async function ask(q, opts = {}){
   q = (q||"").trim();
-  if(!q || busy) return;
-  busy = true; turnN++;
-  [$("#sendBtn"),$("#sendBtn2")].forEach(b=>b.disabled=true);
-  $("#examples").style.display="none";
-  $("#convo").classList.add("is-active");
-  $("#ask").value=""; $("#ask2").value="";
-  history.push(q);
-  $("#history").innerHTML = history.map(h=>`<li><button type="button">${esc(h)}</button></li>`).join("");
-  document.querySelectorAll("#history button").forEach((b,i)=>b.onclick=()=>ask(history[i]));
+  if(!q) return;
+  const my = ++runId; turnN++;
+  const inp = $("#ask"); inp.value = q; inp.blur();
+  if(opts.push !== false) history.pushState({q}, "", "?q=" + encodeURIComponent(q));
+  document.title = q + " | Vraag het KNMI | KNMI.nl";
+  $("#examples").hidden = true; $("#results").hidden = false;
 
   const r = route(q);
-  const el = document.createElement("article");
-  el.className="turn";
-  el.innerHTML = `<h2 class="q"><span class="q__mark">Vraag</span><span>${esc(q)}</span></h2>
-    <details class="steps" open><summary><span class="sum">De assistent is bezig…</span></summary><ol>${r.steps.map(s=>`<li class="step"><span class="step__ic"></span><span class="step__t">${s[0]} <code>${s[1]}</code></span><span class="step__ms"></span></li>`).join("")}</ol></details>
-    <div class="answer"></div>`;
-  $("#turns").appendChild(el);
-  el.scrollIntoView({behavior:"smooth",block:"start"});
+  const hits = hitsFor(r);
+  const main = $("#resMain");
+  main.innerHTML = `<a class="jump" href="#hits">Direct naar zoekresultaten <span aria-hidden="true">↓</span></a>
+    <div class="analyse"><p class="analyse__t">Informatie analyseren…</p>${stepsHTML(r.steps)}
+    <div class="skel" aria-hidden="true"><i style="width:92%"></i><i style="width:74%"></i><i style="width:84%"></i><i style="width:100%"></i><i style="width:66%"></i></div></div>`;
+  $("#sideSources").innerHTML = "";
+  $("#hitsTitle").textContent = `${hits.length} resultaten gevonden binnen knmi.nl`;
+  $("#hitList").innerHTML = hits.map(h => `<li class="hit"><a href="${h.u}"><span class="hit__body"><span class="hit__s">${esc(h.s)}</span><h3>${esc(h.t)}</h3><p>${esc(h.d)}</p></span><span class="hit__go" aria-hidden="true">→</span></a></li>`).join("");
+  if(opts.scroll !== false) $("#assistent").scrollIntoView({behavior:"smooth", block:"start"});
 
-  const steps = el.querySelectorAll(".step");
+  const steps = main.querySelectorAll(".step");
   let total = 0;
   for(let i=0;i<steps.length;i++){
     steps[i].classList.add("is-run");
     const ms = r.steps[i][2] + Math.round(Math.random()*180);
-    await sleep(ms); total += ms;
+    await sleep(ms); if(my !== runId) return; total += ms;
     steps[i].classList.remove("is-run"); steps[i].classList.add("is-done");
     steps[i].querySelector(".step__ms").textContent = (ms/1000).toFixed(1).replace(".",",")+" s";
   }
-  el.querySelector(".sum").textContent = `Werkwijze: ${steps.length} stappen, ${(total/1000).toFixed(1).replace(".",",")} seconden`;
-  await sleep(150);
-  el.querySelector(".steps").open = false;
+  await sleep(200); if(my !== runId) return;
 
-  const ans = el.querySelector(".answer");
+  main.querySelector(".analyse").outerHTML =
+    `<details class="steps"><summary>Werkwijze: ${steps.length} stappen, ${(total/1000).toFixed(1).replace(".",",")} seconden</summary>${main.querySelector(".steps-list").outerHTML}</details><div class="answer"></div>`;
+  main.querySelectorAll(".steps .step").forEach(s => s.classList.add("is-done"));
+  const ans = main.querySelector(".answer");
   for(const p of r.text){
-    const isBlock = /^<(h4|ul)/.test(p);
-    const node = document.createElement(isBlock?"div":"p");
+    const node = document.createElement(/^<(h4|ul)/.test(p) ? "div" : "p");
     ans.appendChild(node);
-    await typeHTML(node, p);
+    await typeHTML(node, citeify(p, r.src), my);
+    if(my !== runId) return;
   }
-  for(const c of r.cards){ ans.insertAdjacentHTML("beforeend", c()); await sleep(180); }
-  ans.insertAdjacentHTML("beforeend", sourcesHTML(r.src));
-  ans.insertAdjacentHTML("beforeend", `<div class="follow">${r.follow.map(f=>`<button type="button">${esc(f)}</button>`).join("")}</div>
-    <div class="feedback">Was dit antwoord nuttig? <button type="button">Ja</button><button type="button">Nee</button><span class="fbmsg"></span></div>`);
-  ans.querySelectorAll(".follow button").forEach(b=>b.onclick=()=>ask(b.textContent));
-  ans.querySelectorAll(".feedback button").forEach(b=>b.onclick=()=>{ans.querySelectorAll(".feedback button").forEach(x=>x.classList.remove("is-on"));b.classList.add("is-on");ans.querySelector(".fbmsg").textContent="Bedankt voor uw feedback."});
+  for(const c of r.cards){ ans.insertAdjacentHTML("beforeend", c()); await sleep(160); if(my !== runId) return; }
 
-  busy = false;
-  [$("#sendBtn"),$("#sendBtn2")].forEach(b=>b.disabled=false);
+  ans.insertAdjacentHTML("beforeend", `
+    <div class="feedback fadein">Was dit antwoord nuttig? <button type="button">Ja <span aria-hidden="true">👍</span></button><button type="button">Nee <span aria-hidden="true">👎</span></button><span class="fbmsg"></span></div>
+    <div class="refine fadein"><h2>Verfijn uw vraag</h2>${r.follow.map(f=>`<button type="button">${esc(f)}</button>`).join("")}</div>`);
+  ans.querySelectorAll(".refine button").forEach(b => b.onclick = () => ask(b.textContent));
+  ans.querySelectorAll(".feedback button").forEach(b => b.onclick = () => {
+    ans.querySelectorAll(".feedback button").forEach(x => x.classList.remove("is-on"));
+    b.classList.add("is-on"); ans.querySelector(".fbmsg").textContent = "Bedankt voor uw feedback.";
+  });
+  $("#sideSources").innerHTML = `<h2>Bronnen</h2><ol>${r.src.map((k,i)=>`<li><a href="${SRC[k].u}"><b>${i+1}</b><span>${esc(SRC[k].t)}</span></a></li>`).join("")}</ol>`;
 }
 
 /* Typt HTML woord voor woord zonder tags te breken */
-async function typeHTML(node, html){
+async function typeHTML(node, html, my){
   const tokens = html.match(/<[^>]+>|[^<\s]+\s*|\s+/g) || [];
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let out = "";
+  let out = "", depth = 0;
   const caret = '<span class="caret" aria-hidden="true"></span>';
   for(const t of tokens){
     out += t;
-    if(t[0] !== "<" && !reduce){ node.innerHTML = out + caret; await sleep(14 + Math.random()*22); }
+    if(t[0] === "<"){ if(/^<a\b/.test(t)) depth++; else if(/^<\/a>/.test(t)) depth--; continue; }
+    if(!reduce && depth === 0){ node.innerHTML = out + caret; await sleep(12 + Math.random()*20); if(my !== runId) return; }
   }
   node.innerHTML = out;
 }
 
-function resetConvo(){
-  if(busy) return;
-  $("#turns").innerHTML=""; history.length=0; $("#history").innerHTML="";
-  $("#convo").classList.remove("is-active"); $("#examples").style.display="";
-  focusAsk();
+function resetSearch(){
+  runId++;
+  $("#ask").value = ""; $("#results").hidden = true; $("#examples").hidden = false;
+  document.title = "Vraag het KNMI | KNMI.nl";
 }
-window.resetConvo = resetConvo;
 function focusAsk(){ $("#assistent").scrollIntoView({behavior:"smooth"}); setTimeout(()=>$("#ask").focus(),300); }
 window.focusAsk = focusAsk;
 
-function wire(formSel, taSel){
-  const f=$(formSel), ta=$(taSel);
-  f.addEventListener("submit", e=>{e.preventDefault(); ask(ta.value);});
-  ta.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); ask(ta.value);} });
-  ta.addEventListener("input", ()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,180)+"px"; });
-}
-wire("#askForm","#ask"); wire("#askForm2","#ask2");
+$("#askForm").addEventListener("submit", e => { e.preventDefault(); ask($("#ask").value); });
+$("#ask").addEventListener("search", () => { if(!$("#ask").value){ history.pushState({}, "", location.pathname); resetSearch(); } });
+window.addEventListener("popstate", e => { const q = new URLSearchParams(location.search).get("q"); q ? ask(q, {push:false}) : resetSearch(); });
 $("#navToggle").addEventListener("click", e=>{ const ul=$("#mainnav"); const o=ul.classList.toggle("is-open"); e.currentTarget.setAttribute("aria-expanded",o); });
-
-/* Placeholder roteert door voorbeeldvragen */
-const PH = ["Wordt het droog in het weekend?","Zijn er nu waarschuwingen?","Wat betekent El Niño voor Nederland?","Hoe download ik actuele 10-minutendata van weerstations?","Stuur me een melding bij code oranje in Utrecht"];
-let phI = 0; setInterval(()=>{ phI=(phI+1)%PH.length; $("#ask").placeholder="Bijvoorbeeld: "+PH[phI]; }, 3500);
 
 renderCaps();
 const qp = new URLSearchParams(location.search).get("q");
-if(qp) ask(qp);
+if(qp) ask(qp, {push:false, scroll:false});
 </script>
 </body>
 </html>
