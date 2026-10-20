@@ -1,33 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ReactLenis, type LenisRef } from "lenis/react";
-import { gsap, ScrollTrigger, reducedMotion } from "@/lib/gsap";
+import { ReactLenis, useLenis } from "lenis/react";
+import { ScrollTrigger, reducedMotion } from "@/lib/gsap";
+
+/** Houdt ScrollTrigger gelijk met de Lenis-scrollpositie. */
+function SyncScrollTrigger() {
+  useLenis(() => ScrollTrigger.update());
+  return null;
+}
 
 /**
- * Lenis (smooth scroll) gekoppeld aan de GSAP-ticker, zodat ScrollTrigger
- * en scroll één frame-loop delen (zie lenis/react README, "GSAP integration").
+ * Lenis (smooth scroll) met zijn eigen frame-loop (autoRaf). Eerder hing de
+ * loop aan de GSAP-ticker via een ref in een effect; als die ref op dat moment
+ * nog leeg was, werd Lenis nooit aangedreven terwijl het het wiel wel blokkeerde.
  */
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
-  const ref = useRef<LenisRef>(null);
-
-  useEffect(() => {
-    const lenis = ref.current?.lenis;
-    if (!lenis) return;
-    const update = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(update);
-    gsap.ticker.lagSmoothing(0);
-    const onScroll = () => ScrollTrigger.update();
-    lenis.on("scroll", onScroll);
-    return () => {
-      gsap.ticker.remove(update);
-      lenis.off("scroll", onScroll);
-    };
-  }, []);
-
   return (
     <>
-      <ReactLenis root ref={ref} options={{ autoRaf: false, lerp: 0.1, smoothWheel: !reducedMotion(), anchors: true }} />
+      <ReactLenis root options={{ autoRaf: true, lerp: 0.1, smoothWheel: !reducedMotion(), anchors: true }} />
+      <SyncScrollTrigger />
       {children}
     </>
   );
