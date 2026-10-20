@@ -33,6 +33,7 @@
   --color-card: var(--card);
   --color-ink: var(--ink);
   --color-ink2: var(--ink-2);
+  --color-bg-2: var(--bg-2);
   --color-line: var(--line);
   --color-plan: var(--plan);
   --color-build: var(--build);
@@ -60,11 +61,13 @@ body {
 .font-display {
   font-family: var(--font-display);
 }
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 1.5rem;
-  box-shadow: var(--shadow);
+@layer components {
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow);
+  }
 }
 @keyframes nudge {
   0%, 100% { transform: translateY(0); }
