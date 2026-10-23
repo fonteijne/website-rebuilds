@@ -36,7 +36,8 @@ export default function HeroGlow() {
       aria-hidden="true"
       className="pointer-events-none absolute left-1/2 top-[38%] -z-10 aspect-square w-[150vw] max-w-[1100px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70 sm:w-[90vw]"
       style={{
-        background: "radial-gradient(closest-side, rgb(255 91 34 / 0.28), rgb(255 91 34 / 0.08) 55%, transparent 72%)",
+        background:
+          "radial-gradient(closest-side, rgb(238 112 65 / 0.24), rgb(171 224 224 / 0.09) 55%, transparent 72%)",
       }}
     />
   );

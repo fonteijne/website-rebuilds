@@ -26,7 +26,7 @@ async function send(payload: Record<string, unknown>) {
 }
 
 const quote = (prompt: string) =>
-  `<blockquote style="margin:16px 0;padding:16px 20px;border-left:3px solid #ff5b22;background:#f2efe8;font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.6;color:#0b0b0c">${escapeHtml(prompt).replace(/\n/g, "<br/>")}</blockquote>`;
+  `<blockquote style="margin:16px 0;padding:16px 20px;border-left:3px solid #ee7041;background:#e6f4f4;font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.6;color:#081215">${escapeHtml(prompt).replace(/\n/g, "<br/>")}</blockquote>`;
 
 /** Interne melding met de volledige aanvraag. */
 export function notifyTeam(lead: Lead) {
@@ -50,12 +50,12 @@ export function confirmToVisitor(lead: Lead) {
     to: [lead.email],
     reply_to: TO(),
     subject: "Dit is jouw prompt. Dit gebeurt er nu.",
-    html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#0b0b0c;max-width:560px">
+    html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#081215;max-width:560px">
 <p style="font-size:22px;font-weight:700;margin:0 0 8px">${escapeHtml(thanks.title)}</p>
 <p>${escapeHtml(thanks.lead)}</p>
 <p style="margin-bottom:0"><strong>Jouw prompt:</strong></p>${quote(lead.prompt)}
 ${steps}
-<p style="color:#5d5a53;font-size:13px">Je ontvangt deze mail omdat je via ${site.url.replace("https://", "")} een opdracht hebt ingediend. Antwoord gerust op deze mail als je iets wilt toevoegen.</p>
+<p style="color:#3d5a5c;font-size:13px">Je ontvangt deze mail omdat je via ${site.url.replace("https://", "")} een opdracht hebt ingediend. Antwoord gerust op deze mail als je iets wilt toevoegen.</p>
 </div>`,
   });
 }

@@ -53,7 +53,7 @@ const sections = [
 export default function Page() {
   return (
     <article className="mx-auto max-w-3xl px-4 pb-24 pt-32 sm:px-6 sm:pt-40">
-      <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">Privacy</p>
+      <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">Privacy</p>
       <h1 className="mt-4 text-title font-semibold">Wat we doen met je prompt.</h1>
       <p className="mt-5 text-lg text-muted">
         Kort en duidelijk: we gebruiken je gegevens om je opdracht af te handelen, en voor niets anders zonder jouw

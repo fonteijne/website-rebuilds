@@ -7,7 +7,7 @@ export default function Faq() {
     <section id="vragen" aria-labelledby="faq-title" className="py-20 sm:py-28">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">{faq.eyebrow}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">{faq.eyebrow}</p>
           <SplitHeading id="faq-title" className="mt-4 text-title font-semibold">
             {faq.title}
           </SplitHeading>

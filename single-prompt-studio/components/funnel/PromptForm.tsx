@@ -250,7 +250,7 @@ export default function PromptForm() {
     <div
       ref={root}
       id="prompt"
-      className="relative scroll-mt-28 rounded-[28px] border border-line bg-ink-2 p-2 shadow-[0_40px_120px_-40px_rgb(255_91_34/0.35)] sm:p-3"
+      className="relative scroll-mt-28 rounded-[28px] border border-line bg-ink-2 p-2 shadow-[0_40px_120px_-40px_rgb(238_112_65/0.35)] sm:p-3"
     >
       {step === "prompt" ? (
         <form data-step="prompt" onSubmit={toEmail} noValidate aria-labelledby={ids.label}>
@@ -318,7 +318,7 @@ export default function PromptForm() {
                 type="button"
                 onClick={() => pickChip(c.starter)}
                 aria-pressed={prompt === c.starter}
-                className="rounded-full border border-line px-3.5 py-2 text-sm text-paper/85 transition-colors hover:border-paper/40 hover:text-paper aria-pressed:border-signal aria-pressed:text-signal"
+                className="rounded-full border border-line px-3.5 py-2 text-sm text-paper/85 transition-colors hover:border-paper/40 hover:text-paper aria-pressed:border-gt-blue aria-pressed:text-gt-blue"
               >
                 {c.label}
               </button>

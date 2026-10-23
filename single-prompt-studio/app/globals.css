@@ -2,20 +2,24 @@
 
 /*
  * Single Prompt Studio — design tokens (zie vision.md, "Merk en vormgeving").
- * Inkt als basis, papier voor tekst/lichte vlakken, één signaalkleur voor actie.
+ * Donker, met twee merkkleuren: GT-blauw en GT-oranje (de klassieke racelivrei).
+ * Oranje = actie, blauw = accent. Inkt heeft een zweem blauw zodat beide kleuren erop "zitten".
  */
 @theme {
-  --color-ink: #0b0b0c;
-  --color-ink-2: #131315;
-  --color-ink-3: #1c1c1f;
-  --color-paper: #f2efe8;
-  --color-paper-2: #e6e2d8;
-  --color-muted: #a29e94;
-  --color-muted-ink: #5d5a53;
-  --color-line: rgb(242 239 232 / 0.12);
-  --color-line-ink: rgb(11 11 12 / 0.14);
-  --color-signal: #ff5b22;
-  --color-signal-soft: #ff8a5c;
+  --color-gt-blue: #abe0e0;
+  --color-gt-orange: #ee7041;
+  --color-gt-orange-soft: #f28a60;
+
+  --color-ink: #081215;
+  --color-ink-2: #0d1a1e;
+  --color-ink-3: #13252a;
+  --color-paper: #eef5f4;
+  --color-muted: #8fa8a9;
+  --color-muted-ink: #3d5a5c;
+  --color-line: rgb(171 224 224 / 0.14);
+  --color-line-ink: rgb(8 18 21 / 0.16);
+  --color-signal: var(--color-gt-orange);
+  --color-signal-soft: var(--color-gt-orange-soft);
 
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -48,7 +52,7 @@
   }
 
   ::selection {
-    background: var(--color-signal);
+    background: var(--color-gt-blue);
     color: var(--color-ink);
   }
 
@@ -119,6 +123,19 @@ html.lenis body {
   .hero-fade {
     animation: hero-fade 0.9s var(--ease-out-expo) both;
     animation-delay: calc(var(--i, 0) * 70ms + 380ms);
+  }
+}
+/* Livery arc swings in from the right edge (transform/opacity only). */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-arc {
+    transform-origin: 100% 50%;
+    animation: hero-arc 1.4s var(--ease-out-expo) 0.15s both;
+  }
+}
+@keyframes hero-arc {
+  from {
+    opacity: 0;
+    transform: translateX(18%) rotate(-14deg);
   }
 }
 @keyframes hero-rise {

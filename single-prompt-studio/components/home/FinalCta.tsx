@@ -12,7 +12,10 @@ export default function FinalCta() {
       <div
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 -z-10 h-[70%]"
-        style={{ background: "radial-gradient(60% 80% at 50% 100%, rgb(255 91 34 / 0.25), transparent 70%)" }}
+        style={{
+          background:
+            "radial-gradient(45% 70% at 35% 100%, rgb(171 224 224 / 0.16), transparent 70%), radial-gradient(45% 70% at 65% 100%, rgb(238 112 65 / 0.24), transparent 70%)",
+        }}
       />
       <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
         <SplitHeading id="final-title" className="text-display font-semibold">

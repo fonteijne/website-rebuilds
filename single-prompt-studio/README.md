@@ -3,6 +3,8 @@
 Leadfunnel voor de services van Single Prompt Studio: **“Alles kan met één prompt. Nul iteraties.”**
 Geen bestaande site; dit is een nieuwe build. De richting staat in [`vision.md`](./vision.md). Lees die vóór elke wijziging en toets nieuwe features aan de beslisregel onderaan.
 
+**Kleuren:** donker, met GT-blauw `#ABE0E0` (accent) en GT-oranje `#EE7041` (actie). Tokens in `app/globals.css` (`gt-blue`, `gt-orange`/`signal`, `ink`, `paper`); zie ook vision.md, "Merk en vormgeving".
+
 **Stack:** Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 · GSAP 3 (ScrollTrigger, SplitText, DrawSVG, `@gsap/react`) · Lenis · React Bits (aangepast, in `components/fx`) · Upstash Redis · Resend (via `fetch`).
 
 ```bash
@@ -43,8 +45,8 @@ Daarnaast staan op de homepage: demo's (gelabeld als **Demo**), “Nul iteraties
 
 | Sectie | Animatie |
 |---|---|
-| Hero | CSS-intro (geen wachten op JS voor LCP), getypte voorbeeldprompts in het lege veld, gloed die de muis volgt (`quickTo`) |
-| Band | ScrollVelocity met merkzinnen |
+| Hero | CSS-intro (geen wachten op JS voor LCP), livrei-boog die inzwaait, getypte voorbeeldprompts in het lege veld, gloed die de muis volgt (`quickTo`) |
+| Band | ScrollVelocity met merkzinnen op een blauwe band met oranje randen |
 | Demo's | prompt typt zich, pijl tekent zich (DrawSVG), resultaat valt op zijn plek; mobiel een native swipe-rij |
 | Nul iteraties | versies worden doorgestreept op scroll, teller loopt van 4 naar 0 |
 | Werkwijze | voortgangslijn op scroll (horizontaal op desktop, verticaal op mobiel) |
@@ -74,7 +76,7 @@ Fallbacks: zonder opslag én zonder Resend geeft `/api/aanvraag` een 501 en open
 
 ## Gemeten (productiebuild, lokaal)
 
-- Lighthouse mobiel `/`: Performance 91–92, Accessibility 100, Best Practices 100, SEO 100. TBT ~200 ms, CLS 0,001. Gesimuleerde LCP 2,8 s; de gemeten LCP is 0,2 s. Het verschil komt door de framework-JS (React/Next ~160 KB gz) die Lighthouse in de simulatie meetelt.
+- Lighthouse mobiel `/`: Performance 93–95, Accessibility 100, Best Practices 100, SEO 100. TBT ~190 ms, CLS 0,001. Gesimuleerde LCP 2,5–2,9 s; de gemeten LCP is 0,2 s. Het verschil komt door de framework-JS (React/Next ~160 KB gz) die Lighthouse in de simulatie meetelt.
 - `/privacy` 98, `/bedankt` 96 (SEO 66 door de bewuste `noindex`).
 - Scrolltrace met 4x CPU-throttling en traag netwerk: geen long tasks tijdens scrollen, 1–2% gemiste frames (p95 17 ms), CLS ≈ 0,01.
 - Geen horizontale scroll op 390 px, geen console-errors.

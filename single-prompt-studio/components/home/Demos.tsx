@@ -57,7 +57,7 @@ export default function Demos() {
   return (
     <section ref={root} id="demos" aria-labelledby="demos-title" className="py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">{demos.eyebrow}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">{demos.eyebrow}</p>
         <SplitHeading id="demos-title" className="mt-4 max-w-4xl text-title font-semibold">
           {demos.title}
         </SplitHeading>
@@ -76,7 +76,7 @@ export default function Demos() {
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-mono text-sm text-paper/90">{d.service}</h3>
-              <span className="rounded-full border border-signal/50 px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-widest text-signal">
+              <span className="rounded-full border border-gt-blue/50 px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-widest text-gt-blue">
                 {demos.badge}
               </span>
             </div>
@@ -108,7 +108,7 @@ export default function Demos() {
 
             <ul className="mt-5 flex flex-wrap gap-2" aria-label="Resultaat">
               {d.result.map((r) => (
-                <li key={r} data-result className="rounded-full bg-paper px-3 py-1.5 text-sm font-medium text-ink">
+                <li key={r} data-result className="rounded-full bg-gt-blue px-3 py-1.5 text-sm font-medium text-ink">
                   {r}
                 </li>
               ))}
@@ -165,7 +165,7 @@ function DemoVisual({ kind }: { kind: Kind }) {
           ))}
         </div>
         <div data-piece className="flex size-24 shrink-0 flex-col gap-1.5 rounded-xl bg-paper p-2">
-          <span className="flex-1 rounded-md bg-gradient-to-br from-signal to-ink/80" />
+          <span className="flex-1 rounded-md bg-gradient-to-br from-signal to-gt-blue" />
           <span className="h-1.5 w-3/4 rounded bg-ink/40" />
         </div>
       </div>
@@ -204,7 +204,7 @@ function DemoVisual({ kind }: { kind: Kind }) {
             </span>
             <span className="font-mono text-[0.68rem] text-muted">{n}</span>
           </div>
-          {i < 2 && <span data-piece className="mb-6 h-px flex-1 bg-gradient-to-r from-paper/40 to-signal/70" />}
+          {i < 2 && <span data-piece className="mb-6 h-px flex-1 bg-gradient-to-r from-gt-blue/60 to-signal/70" />}
         </div>
       ))}
     </div>

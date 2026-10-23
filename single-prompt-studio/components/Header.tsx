@@ -25,7 +25,7 @@ export default function Header() {
         </nav>
         <Link
           href="/#prompt"
-          className="shrink-0 rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-signal"
+          className="shrink-0 rounded-full bg-gt-blue px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-signal"
         >
           Schrijf je prompt
         </Link>

@@ -53,7 +53,7 @@ export default function ZeroIterations() {
     >
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">{zero.eyebrow}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">{zero.eyebrow}</p>
           <SplitHeading id="zero-title" className="mt-4 text-title font-semibold">
             {zero.title}
           </SplitHeading>

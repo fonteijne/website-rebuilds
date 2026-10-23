@@ -9,7 +9,7 @@ export default function Services() {
   return (
     <section id="diensten" aria-labelledby="services-title" className="py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">{services.eyebrow}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">{services.eyebrow}</p>
         <SplitHeading id="services-title" className="mt-4 max-w-4xl text-title font-semibold">
           {services.title}
         </SplitHeading>
@@ -19,7 +19,7 @@ export default function Services() {
           {services.items.map((s) => (
             <div key={s.id} data-reveal>
               <SpotlightCard className="flex h-full flex-col rounded-[26px] border border-line bg-ink-2 p-6 sm:p-8">
-                <h3 className="font-mono text-sm text-signal">{s.name}</h3>
+                <h3 className="font-mono text-sm text-gt-blue">{s.name}</h3>
                 <p className="mt-4 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{s.pitch}</p>
                 <p className="mt-4 flex-1 leading-relaxed text-muted">{s.text}</p>
                 <PromptButton

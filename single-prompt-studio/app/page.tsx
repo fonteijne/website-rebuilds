@@ -25,7 +25,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <Hero />
       <ScrollVelocity
-        className="border-y border-line py-5"
+        className="border-y-[6px] border-signal bg-gt-blue py-5 text-ink"
         items={marquee}
         itemClassName="text-2xl font-semibold tracking-tight sm:text-4xl"
         separator={<span className="mx-6 inline-block size-3 rounded-full bg-signal sm:mx-10" />}

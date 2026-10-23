@@ -52,7 +52,7 @@ export default function Steps() {
   return (
     <section ref={root} id="werkwijze" aria-labelledby="steps-title" className="py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="font-mono text-xs uppercase tracking-[0.22em] text-signal">{steps.eyebrow}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-gt-blue">{steps.eyebrow}</p>
         <SplitHeading id="steps-title" className="mt-4 text-title font-semibold">
           {steps.title}
         </SplitHeading>
