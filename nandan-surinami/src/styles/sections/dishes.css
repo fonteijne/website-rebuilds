@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Dishes — "Wat eten we vandaag?"
+   Below 900px: a native scroll-snap swipe row.
+   From 900px: pinned, snapping card deck (Dishes.jsx matchMedia).
+   ========================================================================== */
+.dishes {
+  background: var(--saffron);
+  position: relative;
+}
+.dishes__pin {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding: calc(var(--nav-h) + var(--safe-top) + 14px) max(var(--gutter), var(--safe-right)) 56px max(var(--gutter), var(--safe-left));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 80px);
+  align-items: center;
+}
+.dishes .display {
+  color: var(--ink);
+}
+.dishes .display em {
+  color: var(--paper);
+}
+.dishes .kicker--light {
+  color: var(--chili-dark);
+}
+.dishes__caps,
+.dishes__count {
+  display: none;
+}
+.dishes__caps {
+  position: relative;
+  margin-top: 2.4rem;
+  height: 5.6rem;
+  overflow: hidden;
+}
+.dishes__cap {
+  position: absolute;
+  inset: 0;
+}
+.dishes__cap h3 {
+  font-family: var(--f-script);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+  color: var(--chili-dark);
+  line-height: 1.2;
+}
+.dishes__cap p {
+  font-size: 1.05rem;
+}
+.dishes__count {
+  margin-top: 1.4rem;
+  gap: 0.4em;
+  align-items: flex-start;
+  font-family: var(--f-display);
+  font-size: 1.3rem;
+}
+.dishes__count-win {
+  display: flex;
+  flex-direction: column;
+  height: 1.3em;
+  line-height: 1.3;
+  overflow: hidden;
+}
+.dishes__deck {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.dishes__deck::-webkit-scrollbar {
+  display: none;
+}
+.dcard {
+  position: relative;
+  flex: none;
+  width: min(78vw, 420px);
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--paper);
+  padding: 10px;
+  box-shadow: 0 30px 50px -30px rgba(90, 40, 10, 0.55);
+  scroll-snap-align: center;
+  will-change: transform;
+}
+.dcard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+}
+.dcard figcaption {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 20px;
+  width: fit-content;
+  max-width: calc(100% - 44px);
+  background: var(--paper);
+  padding: 0.4em 0.9em;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.dishes__steam {
+  display: none;
+  position: absolute;
+  top: -30px;
+  width: 14px;
+  height: 60px;
+  border-radius: 99px;
+  background: linear-gradient(transparent, rgba(255, 249, 238, 0.7));
+  filter: blur(6px);
+}
+.dishes__steam--1 {
+  left: 40%;
+}
+.dishes__steam--2 {
+  left: 55%;
+}
+
+@media (min-width: 600px) {
+  .dcard {
+    border-radius: 32px;
+    padding: 12px;
+  }
+  .dcard img {
+    border-radius: 22px;
+  }
+  .dcard figcaption {
+    left: 28px;
+    bottom: 26px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .dishes__pin {
+    min-height: 100svh;
+    padding: calc(var(--nav-h) + 20px) var(--gutter) 60px;
+    grid-template-columns: 1fr 1.1fr;
+  }
+  .dishes__caps {
+    display: block;
+  }
+  .dishes__count {
+    display: flex;
+  }
+  .dishes__deck {
+    display: block;
+    aspect-ratio: 1;
+    width: min(100%, 560px);
+    justify-self: center;
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .dcard {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    aspect-ratio: auto;
+    box-shadow: 0 40px 70px -30px rgba(90, 40, 10, 0.55);
+  }
+  .dishes__steam {
+    display: block;
+  }
+}

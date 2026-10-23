@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Swipe pager (SwipeDots.jsx) under the Boemboe and Dishes swipe rows.
+   Only rendered below 900px. Each dot is a 44px tap target.
+   ========================================================================== */
+.swipe-dots {
+  --swipe-progress: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+  margin: 4px max(var(--gutter), var(--safe-left)) 0;
+}
+.swipe-dots__count {
+  font-family: var(--f-display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.swipe-dots__list {
+  display: flex;
+}
+.swipe-dots__dot {
+  position: relative;
+  width: var(--tap);
+  height: var(--tap);
+  margin-inline: -8px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.swipe-dots__dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: 0.3;
+  translate: -50% -50%;
+  transition: width 0.4s var(--ease-out), opacity 0.3s;
+}
+.swipe-dots__dot.is-active::before {
+  width: 22px;
+  opacity: 1;
+}
+.swipe-dots__bar {
+  display: block;
+  flex-basis: 100%;
+  max-width: 220px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(currentColor, currentColor) 0 0 / calc(var(--swipe-progress) * 100%) 100% no-repeat,
+    rgba(42, 24, 16, 0.12);
+}
+.boemboe__dots {
+  color: var(--chili);
+}
+.dishes__dots {
+  color: var(--ink);
+  margin-top: 0;
+}
+
+@media (min-width: 900px) {
+  .swipe-dots {
+    display: none;
+  }
+}

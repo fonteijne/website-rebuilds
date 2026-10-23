@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Marquee
+   ========================================================================== */
+.marquee {
+  position: relative;
+  padding: clamp(60px, 10vh, 120px) 0;
+  overflow: clip;
+}
+.marquee__band {
+  position: relative;
+  padding: 0.5rem 0;
+  width: 110%;
+  margin-left: -5%;
+}
+.marquee__band--saffron {
+  background: var(--saffron);
+  rotate: -2.5deg;
+  z-index: 2;
+}
+.marquee__band--red {
+  background: var(--chili);
+  color: var(--paper);
+  rotate: 2deg;
+  margin-top: -1.6rem;
+}
+.marquee__parallax {
+  position: relative;
+  overflow: hidden;
+}
+.marquee__scroller {
+  display: flex;
+  white-space: nowrap;
+}
+.marquee__scroller span {
+  flex-shrink: 0;
+}
+.marquee__text {
+  font-family: var(--f-display);
+  text-transform: uppercase;
+  font-size: clamp(2.4rem, 6vw, 5.4rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 600px) {
+  .marquee__band--red {
+    margin-top: -1.4rem;
+  }
+}
