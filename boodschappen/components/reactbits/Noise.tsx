@@ -171,11 +171,16 @@ const Noise = ({
     let width = 1;
     let height = 1;
 
+    // Leeg doek niet elke tick wissen: dat maakt de (schermvullende) laag vuil en kost een repaint.
+    let dirty = true;
     const paintDust = (s: typeof settings, step: number) => {
+      const idle = s.dust <= 0 && s.scratches <= 0 && scratchList.length === 0;
+      if (idle && !dirty) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (s.dust <= 0 && s.scratches <= 0 && scratchList.length === 0) return;
+      dirty = !idle;
+      if (idle) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const area = (width * height) / 400000;
 
@@ -235,6 +240,7 @@ const Noise = ({
       height = Math.max(1, root.clientHeight);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
+      dirty = true;
       paintDust(settingsRef.current, 0);
     };
 
@@ -247,7 +253,9 @@ const Noise = ({
         const step = last ? Math.min(0.2, (now - last) / 1000) : 1 / rate;
         last = now;
         const span = TILE * s.size;
-        grain.style.backgroundPosition = `${(Math.random() * span).toFixed(1)}px ${(Math.random() * span).toFixed(1)}px`;
+        // Verschuiven via transform (compositor) i.p.v. background-position (repaint van het hele scherm).
+        // De laag steekt één tegel uit linksboven, dus elke offset binnen een tegel blijft dekkend.
+        grain.style.transform = `translate3d(${Math.round(Math.random() * span)}px, ${Math.round(Math.random() * span)}px, 0)`;
         grain.style.opacity = String(s.opacity * (1 - s.flicker * Math.random() * 0.7));
         roll = (roll + 1) % 3;
         linesRef.current?.style.setProperty('background-position', `0 ${roll}px`);
@@ -301,7 +309,9 @@ const Noise = ({
         style={{
           opacity: settings.opacity,
           mixBlendMode: blend,
-          backgroundSize: `${TILE * settings.size}px ${TILE * settings.size}px`
+          backgroundSize: `${TILE * settings.size}px ${TILE * settings.size}px`,
+          top: -TILE * settings.size,
+          left: -TILE * settings.size
         }}
       />
       <canvas ref={dustRef} className="noise__dust" />
