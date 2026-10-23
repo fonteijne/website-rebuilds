@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+:root {
+  --bg: #fbf7f0;
+  --bg-2: #f1e9db;
+  --card: #fffdf9;
+  --ink: #1d1a2f;
+  --ink-2: #55516b;
+  --line: rgba(29, 26, 47, 0.12);
+  --plan: #6d4aff;
+  --build: #ff7a3d;
+  --shadow: 0 1px 0 rgba(29, 26, 47, 0.06), 0 14px 34px -16px rgba(29, 26, 47, 0.28);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12101f;
+    --bg-2: #1a1730;
+    --card: #1d1a33;
+    --ink: #f5f1ea;
+    --ink-2: #b4b0c9;
+    --line: rgba(245, 241, 234, 0.14);
+    --plan: #a18dff;
+    --build: #ff9a63;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 16px 34px -16px rgba(0, 0, 0, 0.7);
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink-2);
+  --color-bg-2: var(--bg-2);
+  --color-line: var(--line);
+  --color-plan: var(--plan);
+  --color-build: var(--build);
+}
+
+html {
+  background: var(--bg);
+  color-scheme: light dark;
+}
+body {
+  min-height: 100dvh;
+  background: radial-gradient(900px 520px at 85% -8%, color-mix(in srgb, var(--plan) 16%, transparent), transparent 70%),
+    radial-gradient(700px 480px at -10% 30%, color-mix(in srgb, var(--build) 12%, transparent), transparent 70%), var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--plan);
+    outline-offset: 2px;
+  }
+}
+.font-display {
+  font-family: var(--font-display);
+}
+@layer components {
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+}
+@keyframes nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge { animation: none !important; }
+}
