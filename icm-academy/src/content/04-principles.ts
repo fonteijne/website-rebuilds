@@ -1,0 +1,82 @@
+import type { Module } from './types';
+
+export const principles: Module = {
+  id: 'principles',
+  num: '04',
+  title: 'The five design principles',
+  tagline: 'Five rules, each borrowed from something that already worked.',
+  minutes: 6,
+  cards: [
+    {
+      kind: 'idea',
+      title: '1 · One stage, one job',
+      body: 'Each stage handles a single step and writes to its own folder. A stage that fetches data does not also filter it. A stage that filters does not also format the final output. Read a defined input, write a defined output.',
+      harness: 'If your stage description needs the word “and”, split it.',
+      src: '§3.1',
+      tags: ['p-one-stage'],
+    },
+    {
+      kind: 'idea',
+      title: '2 · Plain text is the interface',
+      body: 'Stages talk through markdown and JSON. No binary formats, no database connections, no proprietary serialisation. Any tool that reads text can join the workflow, and anyone with a text editor can inspect or change an artefact.',
+      src: '§3.1',
+      tags: ['p-plain-text'],
+    },
+    {
+      kind: 'idea',
+      title: '3 · Layered context loading',
+      body: 'Agents load only what the current stage needs. Reference material (stable rules) and working artefacts (this run’s content) arrive as structurally separate context: constraints to internalise vs input to process.',
+      src: '§3.1',
+      tags: ['p-layered'],
+    },
+    {
+      kind: 'idea',
+      title: '4 · Every output is an edit surface',
+      body: 'The output of each stage is a file a human can open, read, edit and save before the next stage runs. This implements Horvitz’s mixed-initiative principles: the system picks up whatever the human left there.',
+      harness: 'Never pipe stage output straight into the next stage without a pause point.',
+      src: '§3.1',
+      tags: ['p-edit-surface', 'oversight'],
+    },
+    {
+      kind: 'idea',
+      title: '5 · Configure the factory, not the product',
+      body: 'Set up the workspace once with preferences, brand, style and structure. After that, every run produces a new deliverable using the same configuration, in line with continuous-delivery thinking.',
+      harness: 'Voice guides and conventions are factory settings. Today’s topic is product.',
+      src: '§3.1',
+      tags: ['p-factory'],
+    },
+    {
+      kind: 'quiz',
+      title: 'Which principle is being broken?',
+      options: [
+        'Stage 2 both researches the topic and writes the final script',
+        'Stage 2 reads stage 1’s output folder',
+        'Voice rules live in a shared config file',
+        'The human edits the stage 1 output file',
+      ],
+      answer: 0,
+      why: 'Researching and scripting in one stage breaks “one stage, one job”: you lose the review point between them.',
+      tags: ['p-one-stage'],
+    },
+    {
+      kind: 'quiz',
+      title: 'Which of these is “the factory”?',
+      options: [
+        'research-output.md from this run',
+        'voice.md with your tone rules',
+        'script-draft.md',
+        'Today’s topic brief',
+      ],
+      answer: 1,
+      why: 'voice.md is stable, set once, reused every run (factory). The other three change each run (product).',
+      tags: ['p-factory'],
+    },
+      {
+      kind: 'dogfood',
+      title: 'Dogfood: carve your stages',
+      step: 'stages',
+      body: 'Split your workflow into 2–5 stages, each with exactly one job. The builder warns you when a job smells like two.',
+      tags: ['p-one-stage'],
+    },
+  ],
+};
