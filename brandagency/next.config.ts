@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+const noindexHeaders = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex" },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
+
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -21,6 +26,7 @@ const config: NextConfig = {
   },
   async headers() {
     return [
+      { source: "/(.*)", headers: noindexHeaders },
       {
         source: "/img/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],

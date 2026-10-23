@@ -16,7 +16,10 @@ Verzamelrepo waarin we bestaande websites opnieuw opbouwen (rebuild/revamp): zel
 - Elke website is een **eigen Vercel-project** met de **Root Directory** op de folder van die site (bijv. `amaezin-design`).
 - Framework preset: Next.js voor Next-sites, Vite voor Vite-sites. Bij Vite-sites staat een `vercel.json` in de folder (`framework`, `buildCommand`, `outputDirectory: dist`, SPA-rewrite naar `/index.html` waar nodig, immutable cache voor `/assets/*`).
 - Geheimen (bijv. `RESEND_API_KEY`, Upstash-keys) horen alleen in Vercel env vars, nooit in de repo. Documenteer benodigde env vars in de README van de site, en zorg voor een nette fallback als ze ontbreken.
-- Rebuilds die nog niet live mogen zijn: voeg `X-Robots-Tag: noindex, nofollow` en `Referrer-Policy: no-referrer` headers toe via `vercel.json` (zoals in `nandan-surinami`).
+- **Elke website op Vercel krijgt `noindex` en `nofollow`, zonder uitzondering.** Zet dit in de eerste commit van een nieuwe site en haal het alleen weg als de gebruiker uitdrukkelijk zegt dat de site live gaat op het echte domein. Altijd alle drie de lagen:
+  1. Header `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex` (plus `Referrer-Policy: no-referrer`) op `/(.*)`: via `headers()` in `next.config.ts` bij Next, via `vercel.json` bij Vite.
+  2. Meta robots: `robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } }` in `metadata` van de root-layout bij Next, of `<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />` in `index.html` bij Vite.
+  3. `robots.txt` met `User-agent: *` en `Disallow: /` (`app/robots.ts` bij Next, `public/robots.txt` bij Vite), zonder sitemap-verwijzing.
 - Controleer vóór oplevering dat `npm run build` lokaal slaagt in de folder zelf.
 
 ## Standaard stack

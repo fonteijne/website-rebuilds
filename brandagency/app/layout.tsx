@@ -19,6 +19,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
   title: {
     default: "Brand Agency - Brand Activation - Shopper & Retail Activation",
     template: "%s - Brand Agency",

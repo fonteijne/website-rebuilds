@@ -7,6 +7,7 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakart
 
 export const metadata: Metadata = {
   title: "Boodschappen",
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
   description: "Gedeelde boodschappenlijst voor twee.",
   appleWebApp: { capable: true, title: "Boodschappen", statusBarStyle: "default" },
 };

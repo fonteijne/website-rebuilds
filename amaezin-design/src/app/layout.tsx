@@ -12,6 +12,7 @@ const dmMono = DM_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
   title: {
     default: "Amaezin Design — Grafisch ontwerp, huisstijl & DTP",
     template: "%s — Amaezin Design",

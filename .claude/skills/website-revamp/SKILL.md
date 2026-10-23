@@ -43,7 +43,7 @@ Argumenten: de URL van de bestaande site (en eventueel een folder- of branchnaam
 - Beelden via `next/image` (Next) met statische imports en blur placeholders, of geoptimaliseerde webp/avif bij Vite. Alt-teksten, `width`/`height`, lazy loading buiten de eerste viewport.
 - Formulieren: server route + Resend met env vars, en een nette fallback (`mailto:`) als de key ontbreekt. Valideer client- én server-side.
 - Toegankelijkheid: landmarks, focus-states, focus-trap en Esc in modals, voldoende contrast, `prefers-reduced-motion` met volledig leesbare statische variant.
-- Is de rebuild nog niet live: `noindex` via `vercel.json` headers (`X-Robots-Tag`, `Referrer-Policy: no-referrer`) en/of `robots.txt` met `Disallow: /`.
+- **`noindex, nofollow` is verplicht voor elke site op Vercel**, vanaf de eerste commit: `X-Robots-Tag`-header (Next: `headers()` in `next.config.ts`; Vite: `vercel.json`), meta robots (Next: `metadata.robots`; Vite: `<meta>` in `index.html`) én `robots.txt` met `Disallow: /`. Details in `CLAUDE.md` onder "Hosting". Geen sitemap-verwijzing. Verwijder dit alleen als de gebruiker uitdrukkelijk zegt dat de site live gaat.
 
 ## Performance gedurende het hele traject
 Performance is een harde eis, zeker bij veel animatie. Volg de sectie "Performance" in `CLAUDE.md` en let tijdens het bouwen op:
@@ -58,6 +58,7 @@ Performance is een harde eis, zeker bij veel animatie. Volg de sectie "Performan
 - In de folder: `npm install`, `npm run build` moet slagen; draai lint/typecheck als aanwezig.
 - **Performance-check op de productiebuild** (`npm run start`/`preview`, niet dev): Lighthouse mobiel per hoofdpagina, een trace met 4x CPU-throttling en gethrottled netwerk (long tasks, layout shifts, dropped frames tijdens scrollen), en de bundlegrootte per route. Zit een pagina onder het budget, los dat op vóór oplevering; noteer de scores in de samenvatting.
 - Draai de site (`npm run dev` of `start`) en controleer met Playwright/Chromium op telefoonbreedte (390px) en desktop: geen console-errors, geen horizontale scroll, menu, formulier en belangrijkste animaties werken, reduced-motion-variant is leesbaar. Maak screenshots van de belangrijkste pagina's.
+- Controleer op de draaiende productiebuild dat `X-Robots-Tag: noindex, nofollow...` in de response-headers staat, dat de meta robots in de HTML zit en dat `/robots.txt` `Disallow: /` geeft.
 - Loop de inventaris uit stap 2 na: staat alle content en elke pagina erin? Noteer wat bewust anders is of ontbreekt.
 - Voeg eventuele tests toe waar logica zit (zoals content-integriteit in `field-guide`).
 

@@ -14,6 +14,11 @@ const buildId = sha || String(Date.now());
 // Datum van de commit die live staat; zonder git valt dit terug op het bouwmoment.
 const buildDate = git("log -1 --format=%cI") || new Date().toISOString();
 
+const noindexHeaders = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex" },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
+
 const config: NextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_ID: buildId,
@@ -22,6 +27,9 @@ const config: NextConfig = {
   },
   reactStrictMode: true,
   poweredByHeader: false,
+  async headers() {
+    return [{ source: "/(.*)", headers: noindexHeaders }];
+  },
 };
 
 export default config;
