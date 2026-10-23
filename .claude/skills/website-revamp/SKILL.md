@@ -45,8 +45,18 @@ Argumenten: de URL van de bestaande site (en eventueel een folder- of branchnaam
 - Toegankelijkheid: landmarks, focus-states, focus-trap en Esc in modals, voldoende contrast, `prefers-reduced-motion` met volledig leesbare statische variant.
 - Is de rebuild nog niet live: `noindex` via `vercel.json` headers (`X-Robots-Tag`, `Referrer-Policy: no-referrer`) en/of `robots.txt` met `Disallow: /`.
 
+## Performance gedurende het hele traject
+Performance is een harde eis, zeker bij veel animatie. Volg de sectie "Performance" in `CLAUDE.md` en let tijdens het bouwen op:
+- Stel per pagina een **budget** vast (LCP < 2,5 s, INP < 200 ms, CLS < 0,1, Lighthouse mobiel ≥ 90) en controleer dat na elke grote sectie, niet pas aan het eind.
+- Animeer alleen `transform`/`opacity`; geen layout-properties, geen re-renders in animatielussen, één gedeelde ticker (GSAP + Lenis).
+- Zware effecten (WebGL, noise, grote blur, video) lui laden, pauzeren buiten beeld, versimpelen op mobiel en uitschakelen bij reduced-motion.
+- Splits zware onderdelen (`next/dynamic`/`React.lazy`), importeer alleen gebruikte GSAP-plugins, houd client components klein.
+- Optimaliseer beelden en fonts direct bij het ophalen in stap 2 (webp/avif, juiste afmetingen, font-subset), met `priority` alleen voor het LCP-beeld.
+- Kost een animatie merkbaar performance, vereenvoudig die dan of laat hem vervallen; leg dat vast in de oplevering.
+
 ## 5. Verifiëren
 - In de folder: `npm install`, `npm run build` moet slagen; draai lint/typecheck als aanwezig.
+- **Performance-check op de productiebuild** (`npm run start`/`preview`, niet dev): Lighthouse mobiel per hoofdpagina, een trace met 4x CPU-throttling en gethrottled netwerk (long tasks, layout shifts, dropped frames tijdens scrollen), en de bundlegrootte per route. Zit een pagina onder het budget, los dat op vóór oplevering; noteer de scores in de samenvatting.
 - Draai de site (`npm run dev` of `start`) en controleer met Playwright/Chromium op telefoonbreedte (390px) en desktop: geen console-errors, geen horizontale scroll, menu, formulier en belangrijkste animaties werken, reduced-motion-variant is leesbaar. Maak screenshots van de belangrijkste pagina's.
 - Loop de inventaris uit stap 2 na: staat alle content en elke pagina erin? Noteer wat bewust anders is of ontbreekt.
 - Voeg eventuele tests toe waar logica zit (zoals content-integriteit in `field-guide`).

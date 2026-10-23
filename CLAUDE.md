@@ -38,6 +38,36 @@ Wat we tot nu toe gebruikt hebben en als default aanhouden:
 - GSAP altijd met `useGSAP` + `scope`, nooit onbegrensde selectors; ScrollTrigger van boven naar beneden aanmaken; `gsap.matchMedia()` voor responsive en reduced-motion.
 - Niet blind kopiëren van het oude design: behoud merk, kleuren, copy en URL's (voor SEO), maar bouw het opnieuw op.
 
+## Performance (hoge prioriteit)
+
+Veel animatie mag nooit ten koste gaan van snelheid. Performance is een eis, geen nice-to-have: een animatie die de site traag maakt, gaat eruit of wordt versimpeld.
+
+**Doelen** (gemeten op productiebuild, mobiel, gethrottled): LCP < 2,5 s, INP < 200 ms, CLS < 0,1, Lighthouse Performance ≥ 90 mobiel, scrollen en animaties op 60 fps.
+
+**Animatie**
+- Animeer alleen `transform` en `opacity` (plus `clip-path`/`filter` spaarzaam). Nooit `width`, `height`, `top`, `left`, `margin`, of `box-shadow`-animaties op grote vlakken.
+- `will-change` alleen tijdelijk, op elementen die echt animeren; geen `will-change` op tientallen elementen.
+- Pointer-effecten met `gsap.quickTo`, geen React state per `mousemove`/`scroll`; geen re-renders in animatielussen.
+- Eén `requestAnimationFrame`-loop: Lenis en ScrollTrigger draaien op `gsap.ticker`, geen eigen rAF-loops ernaast.
+- Beperk het aantal gelijktijdige ScrollTriggers en `scrub`-animaties; gebruik `ScrollTrigger.batch` voor lijsten met gelijke items. Ruim alles op (`useGSAP` doet dit voor scoped animaties).
+- Zware effecten (WebGL, `Noise`/`Grainient`, canvas, grote blur/mix-blend-mode) lui laden, pauzeren buiten beeld (`IntersectionObserver`), laag houden op mobiel (lagere resolutie/DPR) en uitschakelen bij `prefers-reduced-motion` of zwakke devices.
+- Pinned/horizontale scroll alleen waar het echt waarde heeft; op mobiel liever een native swipe-rij.
+
+**Laden**
+- GSAP-plugins alleen importeren die gebruikt worden; zware onderdelen (WebGL, modals, video, quiz/lab) met `next/dynamic` of `React.lazy` splitsen. Geen extra animatielibrary als GSAP het al kan.
+- Content-pagina's statisch genereren (SSG) waar kan; client components (`'use client'`) zo klein en laag in de tree mogelijk.
+- Beelden: `next/image` (of vooraf geoptimaliseerde webp/avif), juiste `sizes`, `priority` alleen voor het LCP-beeld, rest lazy; altijd `width`/`height` of `aspect-ratio` tegen layout shift.
+- Fonts: `next/font` of `@fontsource` met subset en `font-display: swap`, maximaal 2 families/gewichten die echt gebruikt worden; geen render-blokkerende externe fontcss.
+- Video: poster + facade (laden pas bij klik, zoals YouTube-nocookie in `nandan-surinami`), `preload="none"` en korte, gecomprimeerde loops.
+- Third-party scripts vermijden of uitstellen (`afterInteractive`/`lazyOnload`).
+- Na fonts/beelden en routewissel `ScrollTrigger.refresh()`, maar niet in een loop of bij elke render.
+
+**Meten vóór oplevering**
+- Draai `npm run build` en test de productiebuild (`npm run start` / `npm run preview`), niet de dev-server.
+- Lighthouse (mobiel) en een Chrome-performance-trace via Playwright/Chromium op een gethrottlede CPU (4x) en netwerk; kijk naar long tasks, layout shifts en dropped frames tijdens scrollen.
+- Check de bundlegrootte per route (Next toont dit na `build`); let op onverwacht grote client bundles.
+- Scoort een pagina onder de doelen: eerst zware effecten vereenvoudigen of lui laden, pas daarna andere optimalisaties. Meld afwijkingen in de oplevering.
+
 ## Nuttige repo's (doelgericht inzetten)
 
 Gebruikt in eerdere sites:
@@ -68,7 +98,7 @@ Aanvullend, gericht in te zetten:
 - Responsive en toegankelijk via `gsap.matchMedia()`: aparte takken voor desktop/mobiel en voor `prefers-reduced-motion: reduce`.
 - Pointer-gedreven beweging (magneet, volg-cursor) met `gsap.quickTo`, geen React state per `mousemove`.
 - Horizontale scroll met `ease: "none"`; ScrollTriggers van boven naar beneden aanmaken; na fonts/beelden/route-wissel `ScrollTrigger.refresh()`.
-- Animeer alleen `transform` en `opacity`; vermijd layout-properties.
+- Animeer alleen `transform` en `opacity`; vermijd layout-properties. Zie ook de sectie "Performance".
 
 **greensock/GSAP** (naslag)
 - Alle plugins zijn gratis sinds 3.13: importeer ze uit `gsap/<Plugin>` (bijv. `gsap/SplitText`), er is geen club-registry of token nodig.
