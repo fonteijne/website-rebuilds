@@ -1,0 +1,65 @@
+import type { Card } from './types';
+
+export const cards: Card[] = [
+  {
+    kind: 'idea',
+    title: 'No Xcode in Linux',
+    body: 'Xcode, the iOS SDK, simulators and SwiftUI previews only run on macOS. Dev containers, Docker images and Claude Code cloud sessions are Linux: there Claude can read and edit Swift, but it can’t run xcodebuild, a simulator or a preview.',
+    src: 'cc-envs',
+    tags: ['mac-only'],
+  },
+  {
+    kind: 'diff',
+    title: 'Isolation options',
+    left: 'Web / Linux project',
+    right: 'iOS project on a Mac',
+    same: ['Unattended runs need a boundary around the whole process', 'The Bash sandbox is the easy everyday layer', 'A separate machine is the strongest option'],
+    different: [
+      ['Dev container with the reference firewall', 'No container for Xcode: use the sandbox runtime (Seatbelt) or a macOS VM'],
+      ['Cloud session builds and tests everything', 'Cloud session only for code that builds on Linux (pure Swift packages)'],
+      ['Linux CI runners', 'macOS CI: Xcode Cloud or hosted macOS runners'],
+      ['A throwaway container per task is cheap', 'A macOS VM is heavy (tens of GB with Xcode); keep a prepared base image'],
+    ],
+    src: 'cc-envs',
+    tags: ['mac-isolation'],
+  },
+  {
+    kind: 'idea',
+    title: 'macOS virtual machines',
+    body: 'Apple silicon Macs run macOS guests through Apple’s Virtualization framework, with tools like Tart or UTM. Install Xcode in the VM, sign in there only with what that VM needs, and run Claude Code inside. Apple’s macOS licence allows a limited number of extra macOS instances per Mac for development and testing; check the current licence terms.',
+    src: 'practice',
+    verify: true,
+    tags: ['mac-vm'],
+  },
+  {
+    kind: 'idea',
+    title: 'A cheap middle ground: a separate macOS user',
+    body: 'A dedicated user account gets its own home folder, its own login keychain and its own Xcode accounts. Your signing identities, SSH keys and browser sessions aren’t in its keychain. It’s not a VM, but it removes your personal secrets from the agent’s reach. Check the permissions on your own home folder.',
+    src: 'practice',
+    verify: true,
+    tags: ['mac-isolation'],
+  },
+  {
+    kind: 'idea',
+    title: 'What cloud sessions can do for iOS',
+    body: 'Plenty: refactors, reviews, documentation, and building and testing Swift packages that don’t import UIKit or SwiftUI with swift build and swift test on Linux. Bring the result to your Mac for the Xcode build.',
+    src: 'practice',
+    tags: ['cloud-swift'],
+  },
+  {
+    kind: 'demo',
+    title: 'Pick a setup',
+    demo: 'iosenv',
+    body: 'Choose the iOS task. See which environment fits and why.',
+    tags: ['mac-isolation', 'mac-only'],
+  },
+  {
+    kind: 'quiz',
+    title: 'You want Claude to run unattended overnight and fix failing UI tests. Which setup?',
+    options: ['Dev container with the firewall', 'Cloud session', 'A macOS VM (or a dedicated Mac/user) with Xcode, sandbox runtime or dontAsk, narrow rules', 'Your main account in bypass mode'],
+    answer: 2,
+    why: 'UI tests need Xcode and a simulator, so Linux is out. Unattended means a boundary around the whole process, which on Apple hardware means a macOS VM, a dedicated machine, or the Seatbelt-based sandbox runtime.',
+    src: 'cc-envs',
+    tags: ['mac-only', 'mac-vm'],
+  },
+];

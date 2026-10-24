@@ -1,0 +1,77 @@
+import type { Card } from './types';
+
+export const cards: Card[] = [
+  {
+    kind: 'diff',
+    title: 'Sandbox on a Mac vs on Linux',
+    left: 'Linux / WSL2',
+    right: 'macOS',
+    same: ['Same settings keys: sandbox.enabled, filesystem, network, excludedCommands', 'Same rule: shell commands only, not file tools, MCP or hooks'],
+    different: [
+      ['bubblewrap + socat, installed by you', 'Seatbelt, built into macOS: nothing to install'],
+      ['Localhost servers blocked', 'allowLocalBinding lets commands listen on and reach localhost'],
+      ['Container quirks (enableWeakerNestedSandbox)', 'Apple Events blocked: open and osascript fail'],
+    ],
+    src: 'cc-sandbox',
+    tags: ['seatbelt-native'],
+  },
+  {
+    kind: 'idea',
+    title: 'DerivedData lives outside the project',
+    body: 'By default xcodebuild writes build products to ~/Library/Developer/Xcode/DerivedData, outside the working directory, so a sandboxed build can fail on writes. Prefer keeping it inside the project (add the folder to .gitignore) over widening the sandbox.',
+    code: `xcodebuild -scheme MyApp -destination 'platform=iOS Simulator,name=iPhone 17' \\
+  -derivedDataPath ./build/DerivedData test`,
+    src: 'practice',
+    verify: true,
+    tags: ['deriveddata'],
+  },
+  {
+    kind: 'idea',
+    title: 'SwiftPM needs network and a cache',
+    body: 'Resolving packages fetches from GitHub and other hosts, so they must be on allowedDomains. Remember the broad-host caveat: github.com also allows gists and issues. Git over SSH doesn’t work through the proxy, so use https package URLs. Package caches live under ~/Library; if resolution fails on writes, add allowWrite for that cache folder rather than excluding the command.',
+    code: `"network": { "allowedDomains": ["github.com", "*.githubusercontent.com"] }`,
+    src: 'cc-sandbox',
+    verify: true,
+    tags: ['spm-net'],
+  },
+  {
+    kind: 'idea',
+    title: 'Simulators talk to system services',
+    body: 'xcrun simctl and xcodebuild test drive simulators through macOS system services. Under Seatbelt that can fail with errors that don’t say “sandbox”. If you hit it, exclude the exact command (for example xcrun simctl *) rather than an interpreter or all of xcrun, and keep the build itself sandboxed where you can.',
+    src: 'practice',
+    verify: true,
+    tags: ['sim-services'],
+  },
+  {
+    kind: 'idea',
+    title: 'open and osascript are blocked',
+    body: 'Apple Events are blocked inside the sandbox, so opening Xcode, Simulator or a URL from a command fails (error -600). allowAppleEvents exists, but it removes code-execution isolation, because AppleScript can drive other apps. Open things yourself.',
+    src: 'cc-sandbox',
+    tags: ['apple-events'],
+  },
+  {
+    kind: 'idea',
+    title: 'Building is running code',
+    body: 'Allowing xcodebuild allows every Run Script build phase, SwiftPM build-tool plugin and Swift macro the project contains. So a new package dependency is new code that runs on your Mac at build time. Xcode asks you to trust and enable package plugins and macros, and SwiftPM sandboxes plugins itself, but the safest moment to catch it is when Package.swift or the project file changes.',
+    guard: 'Put Edit(./Package.swift) and Edit(./**/*.pbxproj) in ask, so dependency changes always pass your eyes.',
+    src: 'practice',
+    verify: true,
+    tags: ['build-code'],
+  },
+  {
+    kind: 'demo',
+    title: 'Which Xcode commands survive the sandbox?',
+    demo: 'xcodesandbox',
+    body: 'Default sandbox, project in the working directory. Guess the outcome, then read the fix.',
+    tags: ['deriveddata', 'spm-net', 'apple-events', 'sim-services'],
+  },
+  {
+    kind: 'quiz',
+    title: 'xcodebuild fails in the sandbox writing to DerivedData. What’s the best fix?',
+    options: ['Add "xcodebuild *" to excludedCommands', 'Set allowUnsandboxedCommands to true', 'Pass -derivedDataPath ./build/DerivedData so output stays in the project', 'Turn the sandbox off for iOS projects'],
+    answer: 2,
+    why: 'Keeping writes inside the working directory fixes the cause without widening anything. Excluding xcodebuild would also take every build script and plugin out of the sandbox.',
+    src: 'practice',
+    tags: ['deriveddata', 'sb-excluded'],
+  },
+];
