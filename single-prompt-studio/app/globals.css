@@ -2,7 +2,7 @@
 
 /*
  * Single Prompt Studio — design tokens (zie vision.md, "Merk en vormgeving").
- * Donker, met twee merkkleuren: GT-blauw en GT-oranje (de klassieke racelivrei).
+ * Donker, met twee merkkleuren: GT-blauw en GT-oranje.
  * Oranje = actie, blauw = accent. Inkt heeft een zweem blauw zodat beide kleuren erop "zitten".
  */
 @theme {
@@ -123,19 +123,6 @@ html.lenis body {
   .hero-fade {
     animation: hero-fade 0.9s var(--ease-out-expo) both;
     animation-delay: calc(var(--i, 0) * 70ms + 380ms);
-  }
-}
-/* Livery arc swings in from the right edge (transform/opacity only). */
-@media (prefers-reduced-motion: no-preference) {
-  .hero-arc {
-    transform-origin: 100% 50%;
-    animation: hero-arc 1.4s var(--ease-out-expo) 0.15s both;
-  }
-}
-@keyframes hero-arc {
-  from {
-    opacity: 0;
-    transform: translateX(18%) rotate(-14deg);
   }
 }
 @keyframes hero-rise {

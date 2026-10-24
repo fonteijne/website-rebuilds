@@ -1,7 +1,6 @@
 import PromptForm from "@/components/funnel/PromptForm";
 import { hero } from "@/lib/content";
 import HeroGlow from "./HeroGlow";
-import LiveryArc from "./LiveryArc";
 
 /**
  * Hero = belofte + promptveld (vision.md: het invoerveld is het belangrijkste element).
@@ -14,12 +13,6 @@ export default function Hero() {
       className="grain relative isolate overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-36"
     >
       <HeroGlow />
-      <div
-        aria-hidden="true"
-        className="hero-arc pointer-events-none absolute -right-[110px] top-36 -z-10 h-[380px] sm:-right-10 sm:top-16 sm:h-[640px] lg:right-0 lg:top-10 lg:h-[760px]"
-      >
-        <LiveryArc className="h-full w-auto" />
-      </div>
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-20 opacity-[0.35] [background-image:linear-gradient(var(--color-line)_1px,transparent_1px),linear-gradient(90deg,var(--color-line)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_50%_30%,black,transparent_70%)]"

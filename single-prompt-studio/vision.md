@@ -255,13 +255,12 @@ Vastgelegd bij de eerste build, zodat latere uitbreidingen hetzelfde gevoel houd
 - **Kernbeeld: het invoerveld.** Het promptveld is het logo, de hero en de call-to-action tegelijk. Elke pagina leidt terug naar dat ene veld.
 - **Contrast prompt ↔ resultaat.** De prompt staat in monospace (het ruwe idee), het resultaat in grote, strakke display-typografie (het afgemaakte werk). Die tweedeling herhaalt zich in demo's, voorbeelden en e-mails.
 - **De cursor.** Een knipperende tekstcursor (`▍`) in GT-oranje is het merkaccent: in het woordmerk, het invoerveld en kleine details.
-- **Kleuren: een donkere site met de twee GT-kleuren** (de klassieke blauw-oranje racelivrei):
+- **Kleuren: een donkere site met de twee GT-kleuren.** Het gaat om de kleuren zelf, niet om vormen of motieven uit het referentiebeeld (geen bogen, cirkels of racestrepen):
   - **GT-blauw `#ABE0E0`**: accent. Labels, resultaatchips, de merkband, het voorbeeldvoorstel, de primaire headerknop.
-  - **GT-oranje `#EE7041`**: actie. Hoofdknoppen, cursor, voortgangslijnen, de racestreep.
+  - **GT-oranje `#EE7041`**: actie. Hoofdknoppen, cursor, voortgangslijnen.
   - **Inkt `#081215`** (zwart met een zweem blauw) als basis en **`#EEF5F4`** voor tekst. Geen lichte pagina-secties; licht komt alleen terug als blauw accentvlak.
   - Oranje nooit als tekst op blauw (contrast te laag); op blauw staat inkt.
   - Geen paarse AI-gradients of robotbeelden: we verkopen uitvoering, geen techniek.
-- **Livrei-motief.** Een blauwe band met oranje middenstreep en dunne inktlijnen (de boog in de hero, de streep op het voorstel, het icoon en de OG-afbeelding). Spaarzaam gebruiken: één keer per scherm.
 - **Toon.** Kort, zelfverzekerd, concreet. Je/jij-vorm. Zinnen als “Eén prompt. Klaar.” in plaats van uitleg over modellen.
 - **Beweging.** Animaties tonen de belofte (een prompt die zich typt, deliverables die op hun plek vallen, iteraties die worden doorgestreept), nooit decoratie die de funnel vertraagt. Snelheid en `prefers-reduced-motion` gaan altijd voor.
 - **Eerlijkheid in beeld.** Voorbeelden heten “Demo” of “Voorbeeld”. Geen verzonnen logo's, cijfers, reviews, prijzen of levertijden.

@@ -33,23 +33,18 @@ export default function Proposal() {
           <article
             data-reveal
             aria-label="Voorbeeld van een voorstel"
-            className="relative overflow-hidden rounded-[28px] bg-gt-blue p-5 text-ink shadow-[0_40px_100px_-40px_rgb(171_224_224/0.35)] sm:p-8"
+            className="rounded-[28px] bg-gt-blue p-5 text-ink shadow-[0_40px_100px_-40px_rgb(171_224_224/0.35)] sm:p-8"
           >
-            {/* Racestreep: oranje met een dunne inktlijn, zoals op de livrei. */}
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 right-10 w-5 border-x-2 border-ink/80 bg-signal sm:right-14 sm:w-7"
-            />
-            <div className="relative flex items-center justify-between gap-3 pr-12 sm:pr-20">
+            <div className="flex items-center justify-between gap-3">
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-ink">Voorstel</p>
               <span className="rounded-full bg-ink px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-widest text-paper">
                 {proposal.badge}
               </span>
             </div>
-            <blockquote className="relative mt-5 mr-12 border-l-4 border-ink bg-paper/60 px-4 py-3 font-mono text-sm leading-relaxed sm:mr-20">
+            <blockquote className="mt-5 border-l-4 border-ink bg-paper/60 px-4 py-3 font-mono text-sm leading-relaxed">
               {ex.prompt}
             </blockquote>
-            <dl className="relative mt-6 mr-12 divide-y divide-line-ink sm:mr-20">
+            <dl className="mt-6 divide-y divide-line-ink">
               {ex.rows.map((r) => (
                 <div key={r.label} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr] sm:gap-4">
                   <dt className="text-sm text-muted-ink">{r.label}</dt>
@@ -57,7 +52,7 @@ export default function Proposal() {
                 </div>
               ))}
             </dl>
-            <div className="relative mt-6 mr-12 flex flex-col gap-3 sm:mr-20 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span
                 aria-hidden="true"
                 className="inline-flex items-center justify-center gap-3 rounded-full bg-ink px-6 py-3.5 font-semibold text-paper"

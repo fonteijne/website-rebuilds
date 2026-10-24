@@ -45,7 +45,7 @@ Daarnaast staan op de homepage: demo's (gelabeld als **Demo**), “Nul iteraties
 
 | Sectie | Animatie |
 |---|---|
-| Hero | CSS-intro (geen wachten op JS voor LCP), livrei-boog die inzwaait, getypte voorbeeldprompts in het lege veld, gloed die de muis volgt (`quickTo`) |
+| Hero | CSS-intro (geen wachten op JS voor LCP), getypte voorbeeldprompts in het lege veld, gloed die de muis volgt (`quickTo`) |
 | Band | ScrollVelocity met merkzinnen op een blauwe band met oranje randen |
 | Demo's | prompt typt zich, pijl tekent zich (DrawSVG), resultaat valt op zijn plek; mobiel een native swipe-rij |
 | Nul iteraties | versies worden doorgestreept op scroll, teller loopt van 4 naar 0 |
