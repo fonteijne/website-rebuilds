@@ -2,6 +2,7 @@ import { allCards, concepts, modules } from '../content';
 import { resetAll, useStore } from '../lib/store';
 import { conceptState } from '../lib/concepts';
 import { href } from '../lib/route';
+import { TRACK } from '../lib/tracks';
 
 export default function Coverage() {
   const s = useStore();
@@ -12,7 +13,7 @@ export default function Coverage() {
       <div className="mono text-sm text-guard">Concept map</div>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-5xl">How well is your agent guarded?</h1>
       <p className="mt-2 max-w-2xl text-mute">
-        {concepts.length} concepts across both tracks. One lights up when you finish a card that teaches it, and answer any quiz on it correctly.
+        {concepts.length} concepts across three tracks. One lights up when you finish a card that teaches it, and answer any quiz on it correctly.
       </p>
 
       <div className="panel mt-8 flex flex-wrap items-center gap-6 p-6">
@@ -49,7 +50,7 @@ export default function Coverage() {
       <div className="mt-8 grid gap-8">
         {modules.map((m) => {
           const ids = [...new Set(m.cards.flatMap((x) => x.tags ?? []))].filter((id) => concepts.some((k) => k.id === id));
-          const color = m.track === 'ios' ? 'text-ios' : 'text-guard';
+          const color = TRACK[m.track].text;
           return (
             <section key={m.id}>
               <h2 className="mb-3 flex items-baseline gap-3 text-lg font-semibold">
@@ -65,7 +66,7 @@ export default function Coverage() {
                         <span className={on ? 'text-ok' : ''} aria-hidden>
                           {on ? '●' : '○'}
                         </span>
-                        <span className="flex-1">{k.label}</span>
+                        <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{k.label}</span>
                         <span className="sr-only">{on ? 'covered' : 'not yet covered'}</span>
                       </a>
                     </li>

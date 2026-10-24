@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { DogfoodId } from '../content/types';
-import { DEFAULT_DOMAINS, updatePolicy, useStore, type IosSetup, type Policy, type Profile, type StartMode } from '../lib/store';
+import { DEFAULT_DOMAINS, updatePolicy, useStore, type IosSetup, type OfflineRoute, type Policy, type Profile, type Runtime, type StartMode } from '../lib/store';
 
 function Toggle({ k, label, hint }: { k: keyof Policy; label: string; hint?: ReactNode }) {
   const { policy } = useStore();
@@ -20,7 +20,7 @@ function Choice<T extends string>({ value, options, onChange, label }: { value: 
   return (
     <fieldset>
       <legend className="label">{label}</legend>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))]">
         {options.map(([v, l, d]) => (
           <label key={v} className={`cursor-pointer rounded-xl border px-3.5 py-3 text-sm transition-colors ${value === v ? 'border-guard bg-guard/[0.07]' : 'border-line hover:border-white/25'}`}>
             <input type="radio" className="sr-only" name={label} checked={value === v} onChange={() => onChange(v)} />
@@ -107,6 +107,47 @@ export default function Dogfood({ step }: { step: DogfoodId }) {
               </label>
               <textarea id="domains" className="field" rows={4} value={p.domains} onChange={(e) => updatePolicy({ domains: e.target.value })} />
             </div>
+          </>
+        )}
+      </div>
+    );
+
+  if (step === 'offline')
+    return (
+      <div className="space-y-3">
+        <Toggle
+          k="offline"
+          label="Local model, zero telemetry"
+          hint="Adds an offline/ folder: managed settings with a pinned endpoint, Xcode agent config for your route, a model-server script and a verification script. Also denies WebFetch/WebSearch and limits the sandbox to the model server."
+        />
+        {p.offline && (
+          <>
+            <Choice<Runtime>
+              label="Model server"
+              value={p.runtime}
+              onChange={(v) => updatePolicy({ runtime: v })}
+              options={[
+                ['ollama', 'Ollama', '127.0.0.1:11434 · v0.14+'],
+                ['lmstudio', 'LM Studio', '127.0.0.1:1234 · v0.4.1+'],
+              ]}
+            />
+            <div>
+              <label className="label" htmlFor="lmodel">
+                Local model
+              </label>
+              <input id="lmodel" className="field mono" value={p.localModel} onChange={(e) => updatePolicy({ localModel: e.target.value })} placeholder="qwen3-coder" />
+            </div>
+            <Choice<OfflineRoute>
+              label="Route from Xcode"
+              value={p.offlineRoute}
+              onChange={(v) => updatePolicy({ offlineRoute: v })}
+              options={[
+                ['bridge', 'E · Terminal + mcpbridge', 'Fully documented, enforceable'],
+                ['claude', 'A · Claude Agent', 'ClaudeAgentConfig (verify)'],
+                ['codex', 'B · Codex', 'codex/config.toml (verify)'],
+                ['acp', 'C · ACP agent', 'Wrapper script'],
+              ]}
+            />
           </>
         )}
       </div>

@@ -3,6 +3,8 @@ import { useSyncExternalStore } from 'react';
 export type Profile = 'web' | 'ios';
 export type StartMode = 'default' | 'acceptEdits' | 'plan';
 export type IosSetup = 'xcode' | 'bridge' | 'cli';
+export type Runtime = 'ollama' | 'lmstudio';
+export type OfflineRoute = 'claude' | 'codex' | 'acp' | 'bridge';
 
 /** The learner's own guardrail policy, built up by the dogfood cards and turned into files by the Policy Builder. */
 export interface Policy {
@@ -28,6 +30,11 @@ export interface Policy {
   iosPackageAsk: boolean;
   pbxprojHook: boolean;
   xcodeMcpRules: boolean;
+  // offline & zero telemetry
+  offline: boolean;
+  runtime: Runtime;
+  localModel: string;
+  offlineRoute: OfflineRoute;
 }
 
 export interface State {
@@ -60,6 +67,10 @@ export const emptyPolicy = (): Policy => ({
   iosPackageAsk: true,
   pbxprojHook: true,
   xcodeMcpRules: true,
+  offline: false,
+  runtime: 'ollama',
+  localModel: 'qwen3-coder',
+  offlineRoute: 'bridge',
 });
 
 const KEY = 'guardrail-academy:v1';

@@ -1,0 +1,66 @@
+import type { Card } from './types';
+
+export const cards: Card[] = [
+  {
+    kind: 'idea',
+    title: 'Three parties can talk to the network',
+    body: 'An offline setup has to silence three separate programs. Xcode itself, which hosts the coding assistant. The agent: Claude Agent, Codex, an ACP agent, or Claude Code in Terminal. And the model server on your Mac: Ollama or LM Studio. Each has its own update checks, telemetry and cloud features, and each is configured in a different place.',
+    guard: 'Write down all three for your setup before changing a single setting.',
+    src: ['apple-privacy', 'cc-network', 'ollama-faq', 'lmstudio-privacy'],
+    tags: ['three-parties'],
+  },
+  {
+    kind: 'idea',
+    title: 'What Apple says it collects',
+    body: 'By default no model provider is enabled in Xcode, and nothing is shared until you enable one. When you do, Apple collects limited data about your requests to the provider and its responses, such as request counts and approximate sizes, to operate the feature. Your project files can go to the provider, and the provider’s own privacy policy applies. Conversation history is stored in Xcode, where you can view or delete it.',
+    src: 'apple-privacy',
+    tags: ['apple-collects'],
+  },
+  {
+    kind: 'idea',
+    title: 'Every host Claude Code can contact',
+    body: 'Besides model requests, Claude Code’s documentation lists: api.anthropic.com (also for the WebFetch safety check, feature flags and telemetry events), two Datadog intake hosts for telemetry and error reports, downloads.claude.ai for updates, raw.githubusercontent.com for release notes, github.com for the official plugin marketplace, mcp-proxy.anthropic.com for claude.ai connectors, and claude.ai/platform.claude.com for sign-in.',
+    guard: 'Use that list as the checklist for your firewall rules, not as an allowlist.',
+    src: 'cc-network',
+    tags: ['agent-hosts'],
+  },
+  {
+    kind: 'demo',
+    title: 'Switch it off, host by host',
+    demo: 'traffic',
+    body: 'Toggle the settings and see which outbound connections Claude Code still makes, based on the network and data-usage docs.',
+    src: ['cc-network', 'cc-data-usage', 'cc-gateway'],
+    tags: ['agent-hosts', 'telemetry-vars', 'webfetch-preflight'],
+  },
+  {
+    kind: 'idea',
+    title: 'A local model is not an offline agent',
+    body: 'Pointing ANTHROPIC_BASE_URL at your Mac moves the model requests, nothing else. Anthropic’s gateway docs say it directly: while ANTHROPIC_BASE_URL points elsewhere, Claude Code still sends its telemetry events to Anthropic, and other background traffic such as version checks and release notes still goes out. The same holds for Ollama and LM Studio: inference is local, but update checks and model downloads are not.',
+    guard: 'Local inference + telemetry off + updates managed + egress blocked = offline. Any one alone isn’t.',
+    src: ['cc-gateway', 'ollama-faq', 'lmstudio-privacy'],
+    tags: ['local-not-offline'],
+  },
+  {
+    kind: 'diff',
+    title: 'The two local model servers',
+    left: 'Ollama',
+    right: 'LM Studio',
+    same: ['Both serve an Anthropic-compatible POST /v1/messages that Claude Code can use', 'Both run models on your Mac; prompts for local models stay on the machine', 'Both also offer cloud features you have to keep switched off'],
+    different: [
+      ['v0.14.0 and later; default http://127.0.0.1:11434', 'v0.4.1 and later; default port 1234'],
+      ['Cloud models (names ending in :cloud) and web search; turn off with OLLAMA_NO_CLOUD=1', 'Paid cloud features, used only if you buy and choose them'],
+      ['Auto-downloads updates on macOS', 'Contacts its servers for model search/downloads and update checks; says it has no telemetry'],
+    ],
+    src: ['ollama-anthropic', 'ollama-faq', 'lmstudio-cc', 'lmstudio-privacy'],
+    tags: ['anthropic-compat', 'local-not-offline'],
+  },
+  {
+    kind: 'quiz',
+    title: 'You set ANTHROPIC_BASE_URL=http://127.0.0.1:11434 and nothing else. What still leaves the Mac?',
+    options: ['Nothing, everything is local now', 'Only model requests', 'Telemetry events, update checks and other background traffic', 'Only the WebFetch safety check'],
+    answer: 2,
+    why: 'The base URL only redirects model requests. Telemetry stays on for the Anthropic API provider, also through a custom base URL, and auto-updates, release notes and the WebFetch check have their own switches.',
+    src: ['cc-gateway', 'cc-managed'],
+    tags: ['local-not-offline'],
+  },
+];

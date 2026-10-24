@@ -4,8 +4,9 @@ An interactive learning site about securing Claude Code, built like `icm-academy
 
 - **Core track (8 modules):** threats, permission rules, permission modes, hooks (PreToolUse & co.), the Bash sandbox, isolated environments (sandbox runtime, dev containers, VMs, cloud sessions), supply chain and workspace trust, secrets and team policy.
 - **iOS track (5 modules):** Claude Agent inside Xcode vs Claude Code, the Xcode MCP bridge (`xcrun mcpbridge`), isolation when Xcode only runs on macOS, the sandbox vs the Xcode toolchain, and signing, secrets and shipping. Every topic names explicitly **what stays the same and what is different** (`diff` cards and a filterable comparison table).
-- **Policy Builder:** generates `.claude/settings.json`, fail-closed hook scripts (`guard-bash.sh`, `guard-xcode-mcp.sh`, `lint-pbxproj.sh`, `format.sh`), a `SECURITY.md` that explains every rule and, for setup A, `xcode/README.md`. The zip is built in the browser, with the hook scripts set to mode 755.
-- **Concept map:** 93 concepts that light up as you finish cards and get quizzes right.
+- **Offline track (5 modules):** Xcode agent environment configuration for offline model providers and zero telemetry. Maps every outbound connection of Xcode, the agent and the model server; runs Claude Code on Ollama or LM Studio (Anthropic-compatible `/v1/messages`); compares five routes from Xcode to a local model (Claude Agent via `ClaudeAgentConfig`, Codex via `codex/config.toml`, ACP agent with a wrapper, locally hosted chat provider, Claude Code + `xcrun mcpbridge`); every telemetry switch including the two `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` misses; enforcement with managed `allowedProviders: ["customEndpoint"]` and a pinned `env`; and verification (sockets, sandbox allowlist, firewall). Every card carries its sources as visible chips, and the track page lists all sources by publisher.
+- **Policy Builder:** generates `.claude/settings.json`, fail-closed hook scripts (`guard-bash.sh`, `guard-xcode-mcp.sh`, `lint-pbxproj.sh`, `format.sh`), a `SECURITY.md` that explains every rule and, for setup A, `xcode/README.md`. With the offline step on it adds `offline/`: managed settings with a pinned local endpoint and zero-telemetry env, the config for your Xcode route, a model-server script and `verify-offline.sh`. The zip is built in the browser, with the hook scripts set to mode 755.
+- **Concept map:** 123 concepts that light up as you finish cards and get quizzes right.
 
 ## Stack
 Vite · React 19 · TypeScript · Tailwind v4 · GSAP 3 + `@gsap/react` (ScrollTrigger) · Lenis on `gsap.ticker` · React Bits components copied into `src/components/rb/` (ShinyText, SpotlightCard, DotGrid, plus GSAP ports of Magnet and CountUp) · `fflate` for the zip.
@@ -32,7 +33,7 @@ No environment variables. Progress and the learner's policy live in `localStorag
 
 ## Content rules
 1. Content lives in `src/content`, never inside components. Add a card, then update `count` in `meta.ts` (`npm run check` tells you).
-2. Every claim carries a `src`. Mark anything that comes from third-party write-ups, or changes fast, with `verify: true`; it shows a "verify on your setup" chip.
+2. Every claim carries a `src` (one key or a list). In the offline track every non-dogfood card must have one; `npm run check` enforces it. Mark anything that comes from third-party write-ups, or changes fast, with `verify: true`; it shows a "verify on your setup" chip.
 3. Facts were checked against code.claude.com/docs and developer.apple.com in October 2026. Xcode's built-in agent doesn't document hooks, settings.json rules or the sandbox; the site says so instead of guessing.
 
 ## Vercel

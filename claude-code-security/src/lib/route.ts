@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 export type Route =
   | { name: 'home' }
   | { name: 'ios' }
+  | { name: 'offline' }
   | { name: 'module'; id: string }
   | { name: 'build' }
   | { name: 'map' };
@@ -11,6 +12,7 @@ export function parse(hash: string): Route {
   const p = hash.replace(/^#\/?/, '').split('/');
   if (p[0] === 'm' && p[1]) return { name: 'module', id: p[1] };
   if (p[0] === 'ios') return { name: 'ios' };
+  if (p[0] === 'offline') return { name: 'offline' };
   if (p[0] === 'build') return { name: 'build' };
   if (p[0] === 'map') return { name: 'map' };
   return { name: 'home' };
@@ -29,6 +31,7 @@ export function useRoute(): Route {
 export const href = {
   home: '#/',
   ios: '#/ios',
+  offline: '#/offline',
   module: (id: string) => `#/m/${id}`,
   build: '#/build',
   map: '#/map',

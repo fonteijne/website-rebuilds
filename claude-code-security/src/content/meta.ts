@@ -18,6 +18,11 @@ export const MODULE_META: ModuleMeta[] = [
   { file: 'i3-mac-isolation', id: 'mac-isolation', num: 'i3', track: 'ios', title: 'Isolation when Xcode only runs on a Mac', tagline: 'The usual answer, a Linux container, can’t build an iOS app. Here’s what can.', minutes: 6, count: 7 },
   { file: 'i4-ios-sandbox', id: 'ios-sandbox', num: 'i4', track: 'ios', title: 'The sandbox meets the Xcode toolchain', tagline: 'Seatbelt is built in. Xcode’s tools just like to write outside your project.', minutes: 8, count: 8 },
   { file: 'i5-ios-guard', id: 'ios-guard', num: 'i5', track: 'ios', title: 'Signing, secrets and shipping', tagline: 'The iOS-specific keys to protect, actions to gate, and hooks worth having.', minutes: 8, count: 9 },
+  { file: 'o1-traffic', id: 'offline-traffic', num: 'o1', track: 'offline', title: 'Map the traffic', tagline: 'Three programs can talk to the network. Find every connection before you cut one.', minutes: 6, count: 7 },
+  { file: 'o2-local-model', id: 'local-model', num: 'o2', track: 'offline', title: 'Run the agent on a local model', tagline: 'Ollama and LM Studio speak the Anthropic API. Make them fit for agent work.', minutes: 8, count: 9 },
+  { file: 'o3-xcode-routes', id: 'xcode-local-routes', num: 'o3', track: 'offline', title: 'Local models inside Xcode', tagline: 'Five routes from Xcode to a model on your Mac, and how to configure each agent environment.', minutes: 10, count: 10 },
+  { file: 'o4-zero-telemetry', id: 'zero-telemetry', num: 'o4', track: 'offline', title: 'Zero telemetry, enforced', tagline: 'Every switch, the two the master switch misses, and policy no repository can undo.', minutes: 9, count: 11 },
+  { file: 'o5-prove-it', id: 'prove-offline', num: 'o5', track: 'offline', title: 'Prove it stays local', tagline: 'Sockets, sandbox, firewall and a test with the network off.', minutes: 6, count: 8 },
 ];
 export const cardKey = (moduleId: string, i: number) => `${moduleId}:${i}`;
 export const trackMeta = (t: Track) => MODULE_META.filter((m) => m.track === t);

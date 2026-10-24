@@ -5,6 +5,7 @@ import { cardKey, SOURCES, type Card, type Module } from '../content';
 import type { DiffCard, QuizCard } from '../content/types';
 import { markDone, useStore } from '../lib/store';
 import { href } from '../lib/route';
+import { TRACK } from '../lib/tracks';
 import Demo from './demos';
 import Dogfood from './dogfood';
 
@@ -16,12 +17,14 @@ const KIND: Record<Card['kind'], { label: string; color: string }> = {
   dogfood: { label: 'Your policy', color: 'var(--color-guard)' },
 };
 
-function SrcChip({ src, verify }: { src?: string; verify?: boolean }) {
-  const s = src ? SOURCES[src] : undefined;
+/** One chip per source behind the card, linking out, so every claim can be checked. */
+function SrcChip({ src, verify }: { src?: string | string[]; verify?: boolean }) {
+  const list = [src ?? []].flat().map((k) => SOURCES[k]).filter(Boolean);
   return (
     <>
-      {s && (
+      {list.map((s) => (
         <a
+          key={s.url}
           href={s.url}
           target="_blank"
           rel="noreferrer"
@@ -31,7 +34,7 @@ function SrcChip({ src, verify }: { src?: string; verify?: boolean }) {
           {s.label}
           {s.secondhand ? ' · secondhand' : ''} ↗
         </a>
-      )}
+      ))}
       {verify && (
         <span className="chip !border-warn/40 !text-warn" title="Changes fast or isn’t fully documented: check it on your own setup">
           verify on your setup
@@ -45,7 +48,7 @@ function Quiz({ card, k }: { card: QuizCard; k: string }) {
   const [picked, setPicked] = useState<number | null>(null);
   const correct = picked === card.answer;
   return (
-    <div>
+    <div className="[overflow-wrap:anywhere]">
       <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{card.title}</h2>
       <div className="mt-5 grid gap-2.5" role="radiogroup" aria-label={card.title}>
         {card.options.map((o, i) => {
@@ -140,7 +143,8 @@ export default function CardDeck({ module: m, startAt, nextModule }: { module: M
   const k = cardKey(m.id, i);
   const last = i === m.cards.length - 1;
   const answered = card.kind !== 'quiz' || k in s.quiz;
-  const accent = m.track === 'ios' ? 'var(--color-ios)' : 'var(--color-guard)';
+  const t = TRACK[m.track];
+  const accent = t.color;
 
   useGSAP(
     () => {
@@ -186,8 +190,8 @@ export default function CardDeck({ module: m, startAt, nextModule }: { module: M
   }, [answered, last, card.kind, k, go]);
 
   const kind = KIND[card.kind];
-  const nextHref = nextModule ? href.module(nextModule.id) : m.track === 'ios' ? href.build : href.ios;
-  const nextLabel = nextModule ? `Module ${nextModule.num} →` : m.track === 'ios' ? 'Open the Builder →' : 'On to the iOS track →';
+  const nextHref = nextModule ? href.module(nextModule.id) : t.next.href;
+  const nextLabel = nextModule ? `Module ${nextModule.num} →` : t.next.label;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_250px]">
@@ -263,7 +267,7 @@ export default function CardDeck({ module: m, startAt, nextModule }: { module: M
           </span>
           {last ? (
             <a
-              className={`btn ${m.track === 'ios' ? 'btn-ios' : 'btn-primary'}`}
+              className={`btn ${t.btn}`}
               href={answered ? nextHref : undefined}
               onClick={() => card.kind !== 'quiz' && markDone(k)}
               aria-disabled={!answered}
@@ -271,7 +275,7 @@ export default function CardDeck({ module: m, startAt, nextModule }: { module: M
               {nextLabel}
             </a>
           ) : (
-            <button className={`btn ${m.track === 'ios' ? 'btn-ios' : 'btn-primary'}`} onClick={advance} disabled={!answered}>
+            <button className={`btn ${t.btn}`} onClick={advance} disabled={!answered}>
               {card.kind === 'quiz' ? 'Next →' : 'Got it →'}
             </button>
           )}

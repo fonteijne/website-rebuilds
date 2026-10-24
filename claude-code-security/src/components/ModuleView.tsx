@@ -3,6 +3,7 @@ import { useStore } from '../lib/store';
 import { moduleProgress } from '../lib/progress';
 import { href } from '../lib/route';
 import CardDeck from './CardDeck';
+import { TRACK } from '../lib/tracks';
 
 export default function ModuleView({ id }: { id: string }) {
   const s = useStore();
@@ -21,17 +22,18 @@ export default function ModuleView({ id }: { id: string }) {
   const nextMod = track[track.indexOf(m) + 1];
   const p = moduleProgress(s, id);
   const first = m.cards.findIndex((_, i) => !s.done[cardKey(id, i)]);
-  const ios = m.track === 'ios';
+  const t = TRACK[m.track];
+  const inTrack = m.track !== 'core';
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <a href={ios ? href.ios : href.home} className="text-sm text-mute hover:text-ink">
-        ← {ios ? 'iOS track' : 'All modules'}
+      <a href={t.page} className="text-sm text-mute hover:text-ink">
+        ← {inTrack ? t.name : 'All modules'}
       </a>
       <header className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <div className={`mono text-sm ${ios ? 'text-ios' : 'text-guard'}`}>
-            {ios ? 'iOS track · ' : ''}Module {m.num}
+          <div className={`mono text-sm ${t.text}`}>
+            {inTrack ? `${t.name} · ` : ''}Module {m.num}
           </div>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-5xl">{m.title}</h1>
           <p className="mt-2 max-w-2xl text-mute">{m.tagline}</p>

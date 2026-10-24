@@ -8,6 +8,7 @@ export interface Concept {
 
 const core = (id: string, label: string): Concept => ({ id, label, track: 'core' });
 const ios = (id: string, label: string): Concept => ({ id, label, track: 'ios' });
+const air = (id: string, label: string): Concept => ({ id, label, track: 'offline' });
 
 /** Every concept the academy claims to teach. Cards link to these via `tags`; `npm run check` verifies coverage. */
 export const concepts: Concept[] = [
@@ -104,4 +105,34 @@ export const concepts: Concept[] = [
   ios('pbxproj', 'Guard project.pbxproj with plutil'),
   ios('swift-format', 'Format Swift after every edit'),
   ios('xcode-hooks', 'Hooks inside Xcode: verify first'),
+  air('three-parties', 'Three parties: Xcode, the agent, the model server'),
+  air('apple-collects', 'What Apple collects for Intelligence in Xcode'),
+  air('agent-hosts', 'Every host Claude Code can contact'),
+  air('local-not-offline', 'A local model isn’t an offline agent'),
+  air('anthropic-compat', 'Anthropic-compatible local servers'),
+  air('ollama-setup', 'Ollama: endpoint, binding, cloud off'),
+  air('lmstudio-setup', 'LM Studio: endpoint and privacy'),
+  air('context-length', 'Context length for agent work'),
+  air('model-aliases', 'Mapping opus/sonnet/haiku to local models'),
+  air('compat-gaps', 'What the local APIs don’t support'),
+  air('attribution-header', 'The attribution header and local caching'),
+  air('xcode-routes', 'Five routes to a local model in Xcode'),
+  air('route-claude-agent', 'Claude Agent in Xcode with a local endpoint'),
+  air('route-codex', 'Codex in Xcode with a local provider'),
+  air('route-acp', 'ACP agents: absolute paths, no env field'),
+  air('route-chat', 'Locally hosted chat provider'),
+  air('route-bridge', 'Terminal agent + Xcode tools: most control'),
+  air('restricted-env', 'Xcode’s restricted environment'),
+  air('telemetry-vars', 'The telemetry switches'),
+  air('nonessential', 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'),
+  air('webfetch-preflight', 'The WebFetch check ignores the master switch'),
+  air('codex-telemetry', 'Codex telemetry keys'),
+  air('xcode-mdm-keys', 'Xcode MDM keys'),
+  air('pin-endpoint', 'Pin the endpoint: allowedProviders + managed env'),
+  air('repo-env', 'A repo can set ANTHROPIC_BASE_URL'),
+  air('local-data', 'Local transcripts and history'),
+  air('prove-it', 'Prove it: watch the sockets'),
+  air('sandbox-localhost', 'Sandbox allowlist with only localhost'),
+  air('outbound-tools', 'Tools that leave anyway: WebFetch, MCP, hooks'),
+  air('firewall', 'An outbound firewall as the last word'),
 ];

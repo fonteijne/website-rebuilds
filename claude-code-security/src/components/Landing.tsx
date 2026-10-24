@@ -38,6 +38,7 @@ export default function Landing() {
   const s = useStore();
   const core = trackMeta('core');
   const ios = trackMeta('ios');
+  const air = trackMeta('offline');
   const next = core.find((m) => moduleProgress(s, m.id).done < m.count);
   const started = Object.keys(s.done).length > 0;
 
@@ -65,7 +66,7 @@ export default function Landing() {
           <div className="min-w-0">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1 text-xs backdrop-blur">
               <span className="size-1.5 rounded-full bg-guard" />
-              <ShinyText text="Claude Code security · with an iOS / Xcode track" color="#95a1a8" shineColor="#ffffff" speed={3} />
+              <ShinyText text="Claude Code security · iOS / Xcode · offline" color="#95a1a8" shineColor="#ffffff" speed={3} />
             </div>
             {/* Static on purpose: the heading is the LCP candidate, so it paints immediately instead of fading in. */}
             <h1 className="text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">Guardrails for an agent with a shell.</h1>
@@ -131,7 +132,7 @@ export default function Landing() {
 
       {/* TRACKS */}
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <div className="reveal">
             <SpotlightCard spotlightColor="#4fd1b5" className="h-full !p-7">
               <div className="mono mb-3 text-sm text-guard">Core track · {core.length} modules</div>
@@ -152,6 +153,16 @@ export default function Landing() {
               </a>
             </SpotlightCard>
           </div>
+          <div className="reveal">
+            <SpotlightCard spotlightColor="#f59e5b" className="h-full !p-7">
+              <div className="mono mb-3 text-sm text-air">Offline track · {air.length} modules</div>
+              <h3 className="text-2xl font-semibold">Local models, zero telemetry</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-mute">Configure the agent environment in Xcode for Ollama or LM Studio, switch off every byte of telemetry, enforce it with policy, and prove nothing leaves the Mac. Every claim sourced.</p>
+              <a className="btn btn-air mt-6" href={href.offline}>
+                Open the offline track
+              </a>
+            </SpotlightCard>
+          </div>
         </div>
       </section>
 
@@ -160,7 +171,7 @@ export default function Landing() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="reveal text-3xl font-semibold tracking-tight sm:text-4xl">The core track</h2>
-            <p className="reveal mt-3 text-mute">Eight modules, about an hour. The iOS track adds five more.</p>
+            <p className="reveal mt-3 text-mute">Eight modules, about an hour. The iOS and offline tracks add five each.</p>
           </div>
           <div className="reveal mono flex gap-6 text-sm text-mute">
             <span>

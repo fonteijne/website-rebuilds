@@ -7,6 +7,7 @@ import Landing from './components/Landing';
 
 // Everything except the landing page is split out, so the first load stays small.
 const IosTrack = lazy(() => import('./components/IosTrack'));
+const OfflineTrack = lazy(() => import('./components/OfflineTrack'));
 const ModuleView = lazy(() => import('./components/ModuleView'));
 const Builder = lazy(() => import('./components/Builder'));
 const Coverage = lazy(() => import('./components/Coverage'));
@@ -43,6 +44,7 @@ export default function App() {
         <Suspense fallback={<div className="min-h-[60vh]" />}>
           {route.name === 'home' && <Landing />}
           {route.name === 'ios' && <IosTrack />}
+          {route.name === 'offline' && <OfflineTrack />}
           {route.name === 'module' && <ModuleView id={route.id} />}
           {route.name === 'build' && <Builder />}
           {route.name === 'map' && <Coverage />}

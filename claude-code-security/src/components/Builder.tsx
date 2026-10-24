@@ -5,17 +5,18 @@ import { href } from '../lib/route';
 import Dogfood from './dogfood';
 import type { DogfoodId } from '../content/types';
 
-const STEPS: { id: DogfoodId; title: string; hint: string; ios?: boolean }[] = [
+const STEPS: { id: DogfoodId; title: string; hint: string; ios?: boolean; air?: boolean }[] = [
   { id: 'profile', title: '1 · Project', hint: 'name · stack' },
   { id: 'rules', title: '2 · Permission rules', hint: 'deny · ask · allow' },
   { id: 'mode', title: '3 · Starting mode', hint: 'defaultMode' },
   { id: 'hooks', title: '4 · Hooks', hint: 'PreToolUse · PostToolUse' },
   { id: 'sandbox', title: '5 · Sandbox', hint: 'filesystem · network' },
   { id: 'ios', title: '6 · iOS / Xcode', hint: 'setup · signing · shipping', ios: true },
+  { id: 'offline', title: '7 · Offline & telemetry', hint: 'local model · zero telemetry', air: true },
 ];
 
 const colorOf = (p: string) =>
-  p.endsWith('settings.json') ? 'var(--color-guard)' : p.endsWith('.sh') ? 'var(--color-warn)' : p.startsWith('xcode/') ? 'var(--color-ios)' : 'var(--color-info)';
+  p.startsWith('offline/') ? 'var(--color-air)' : p.endsWith('settings.json') ? 'var(--color-guard)' : p.endsWith('.sh') ? 'var(--color-warn)' : p.startsWith('xcode/') ? 'var(--color-ios)' : 'var(--color-info)';
 
 export default function Builder() {
   const { policy: p } = useStore();
@@ -41,6 +42,12 @@ export default function Builder() {
     checks.push(['Shipping actions gated by ask rules', p.iosShipAsk], ['Keychain CLI denied', p.iosKeychainDeny], ['project.pbxproj validated after edits', p.pbxprojHook]);
     if (p.iosSetup === 'bridge') checks.push(['Xcode MCP write tool covered', p.xcodeMcpRules && p.guardHook]);
   }
+  if (p.offline)
+    checks.push(
+      ['Model endpoint pinned in managed settings', true],
+      ['Telemetry and nonessential traffic off', true],
+      ['WebFetch preflight skipped, WebFetch/WebSearch denied', true],
+    );
   const ok = checks.filter((c) => c[1]).length;
 
   return (
@@ -54,7 +61,7 @@ export default function Builder() {
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div className="min-w-0 space-y-2">
           {STEPS.map((s) => (
-            <section key={s.id} className={`panel overflow-hidden ${s.ios ? '!border-ios/30' : ''}`}>
+            <section key={s.id} className={`panel overflow-hidden ${s.ios ? '!border-ios/30' : s.air ? '!border-air/30' : ''}`}>
               <button className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left" aria-expanded={open === s.id} onClick={() => setOpen(open === s.id ? '' : s.id)}>
                 <span className="font-medium">{s.title}</span>
                 <span className="mono text-right text-xs text-mute">{s.hint}</span>

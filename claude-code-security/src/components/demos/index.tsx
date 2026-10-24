@@ -11,6 +11,9 @@ import Xcode from './Xcode';
 import IosEnv from './IosEnv';
 import XcodeSandbox from './XcodeSandbox';
 import IosRules from './IosRules';
+import Traffic from './Traffic';
+import Routes from './Routes';
+import Leaves from './Leaves';
 
 const map: Record<DemoId, () => JSX.Element> = {
   ladder: Ladder,
@@ -24,6 +27,9 @@ const map: Record<DemoId, () => JSX.Element> = {
   iosenv: IosEnv,
   xcodesandbox: XcodeSandbox,
   iosrules: IosRules,
+  traffic: Traffic,
+  routes: Routes,
+  leaves: Leaves,
 };
 
 export default function Demo({ id }: { id: DemoId }) {

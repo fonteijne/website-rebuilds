@@ -8,7 +8,9 @@ const link = (active: boolean) => `px-2.5 sm:px-3 py-1.5 rounded-full text-sm fo
 export default function Nav({ route }: { route: Route }) {
   const s = useStore();
   const o = overall(s);
-  const inIos = route.name === 'ios' || (route.name === 'module' && MODULE_META.find((m) => m.id === route.id)?.track === 'ios');
+  const modTrack = route.name === 'module' ? MODULE_META.find((m) => m.id === route.id)?.track : undefined;
+  const inIos = route.name === 'ios' || modTrack === 'ios';
+  const inAir = route.name === 'offline' || modTrack === 'offline';
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3 sm:gap-2 sm:px-6">
@@ -23,11 +25,14 @@ export default function Nav({ route }: { route: Route }) {
           </span>
         </a>
         <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Main">
-          <a href={href.home} className={link(route.name === 'home' || (route.name === 'module' && !inIos))} aria-current={route.name === 'home' ? 'page' : undefined}>
+          <a href={href.home} className={link(route.name === 'home' || modTrack === 'core')} aria-current={route.name === 'home' ? 'page' : undefined}>
             Learn
           </a>
           <a href={href.ios} className={`${link(!!inIos)} ${inIos ? '!text-ios' : ''}`} aria-current={route.name === 'ios' ? 'page' : undefined}>
             iOS
+          </a>
+          <a href={href.offline} className={`${link(!!inAir)} ${inAir ? '!text-air' : ''}`} aria-current={route.name === 'offline' ? 'page' : undefined}>
+            Offline
           </a>
           <a href={href.build} className={link(route.name === 'build')} aria-current={route.name === 'build' ? 'page' : undefined}>
             Build

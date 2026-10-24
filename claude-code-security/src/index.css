@@ -9,18 +9,21 @@
   --color-line: rgba(255, 255, 255, 0.09);
   --color-ink: #e9ece8;
   --color-mute: #95a1a8;
-  /* guard = brand, ok/warn/bad = outcomes, info = concepts, ios = the iOS track */
+  /* guard = brand, ok/warn/bad = outcomes, info = concepts, ios = the iOS track, air = the offline track */
   --color-guard: #4fd1b5;
   --color-ok: #5fd39a;
   --color-warn: #f5b83d;
   --color-bad: #ef6a75;
   --color-info: #5aa9e6;
   --color-ios: #a993fa;
+  --color-air: #f59e5b;
 }
 
 html {
   color-scheme: dark;
   background: var(--color-bg);
+  /* clip (not hidden): no horizontal scroll on phones, and sticky positioning keeps working */
+  overflow-x: clip;
 }
 body {
   margin: 0;
@@ -84,6 +87,15 @@ body {
 }
 .btn-ios:hover {
   background: #bba9ff;
+  border-color: transparent;
+}
+.btn-air {
+  background: var(--color-air);
+  color: #2a1404;
+  border-color: transparent;
+}
+.btn-air:hover {
+  background: #ffb57a;
   border-color: transparent;
 }
 .field {

@@ -9,18 +9,21 @@ export type DemoId =
   | 'xcode'
   | 'iosenv'
   | 'xcodesandbox'
-  | 'iosrules';
+  | 'iosrules'
+  | 'traffic'
+  | 'routes'
+  | 'leaves';
 
-export type DogfoodId = 'profile' | 'rules' | 'mode' | 'hooks' | 'sandbox' | 'ios';
+export type DogfoodId = 'profile' | 'rules' | 'mode' | 'hooks' | 'sandbox' | 'ios' | 'offline';
 
-export type Track = 'core' | 'ios';
+export type Track = 'core' | 'ios' | 'offline';
 
 interface Base {
   title: string;
   /** concept ids from coverage.ts that this card teaches */
   tags?: string[];
-  /** key into SOURCES (sources.ts): where the claim comes from */
-  src?: string;
+  /** key(s) into SOURCES (sources.ts): where the claims on this card come from, shown as chips on the card */
+  src?: string | string[];
   /** behaviour that changes fast or comes from secondhand reports: check it on your own setup */
   verify?: boolean;
 }

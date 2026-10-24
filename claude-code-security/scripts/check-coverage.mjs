@@ -15,7 +15,8 @@ for (const m of modules) {
       if (!ids.has(t)) errors.push(`${m.id}:${i} unknown tag "${t}"`);
       taught.add(t);
     }
-    if (c.src && !SOURCES[c.src]) errors.push(`${m.id}:${i} unknown src "${c.src}"`);
+    for (const src of [c.src ?? []].flat()) if (!SOURCES[src]) errors.push(`${m.id}:${i} unknown src "${src}"`);
+    if (m.track === 'offline' && c.kind !== 'dogfood' && ![c.src ?? []].flat().length) errors.push(`${m.id}:${i} offline-track card without a source`);
     if (c.kind === 'quiz' && (c.answer < 0 || c.answer >= c.options.length)) errors.push(`${m.id}:${i} answer out of range`);
   });
 }

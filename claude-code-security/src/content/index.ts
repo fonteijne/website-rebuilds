@@ -13,6 +13,11 @@ import { cards as bridge } from './i2-bridge';
 import { cards as macIsolation } from './i3-mac-isolation';
 import { cards as iosSandbox } from './i4-ios-sandbox';
 import { cards as iosGuard } from './i5-ios-guard';
+import { cards as offTraffic } from './o1-traffic';
+import { cards as offLocal } from './o2-local-model';
+import { cards as offRoutes } from './o3-xcode-routes';
+import { cards as offTelemetry } from './o4-zero-telemetry';
+import { cards as offProve } from './o5-prove-it';
 import { MODULE_META, cardKey } from './meta';
 import type { Card, Module } from './types';
 
@@ -30,6 +35,11 @@ const CARDS: Record<string, Card[]> = {
   'i3-mac-isolation': macIsolation,
   'i4-ios-sandbox': iosSandbox,
   'i5-ios-guard': iosGuard,
+  'o1-traffic': offTraffic,
+  'o2-local-model': offLocal,
+  'o3-xcode-routes': offRoutes,
+  'o4-zero-telemetry': offTelemetry,
+  'o5-prove-it': offProve,
 };
 
 export const modules: Module[] = MODULE_META.map((m) => ({ ...m, cards: CARDS[m.file] }));
