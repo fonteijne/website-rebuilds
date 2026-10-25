@@ -1,3 +1,4 @@
+import { extractJson } from "./normalize";
 import { RECIPE_SCHEMA, SYSTEM_PROMPT } from "./prompt";
 
 // OpenRouter chat completions (OpenAI-compatibel). Docs: https://openrouter.ai/docs/api-reference/chat-completion
@@ -7,6 +8,9 @@ const endpoint = () => `${process.env.OPENROUTER_BASE_URL?.replace(/\/$/, "") ||
 export const DEFAULT_MODEL = "google/gemini-3.8-flash";
 
 export const openRouterModel = () => process.env.OPENROUTER_MODEL?.trim() || DEFAULT_MODEL;
+// "low" houdt het snel en goedkoop; zet op "medium"/"high" als de stappen te slordig worden, of "none" om uit te zetten.
+const reasoningEffort = () => process.env.OPENROUTER_REASONING?.trim() || "low";
+
 export const openRouterConfigured = () => Boolean(process.env.OPENROUTER_API_KEY?.trim());
 
 export class UpstreamError extends Error {
@@ -31,13 +35,17 @@ async function call(content: Content[], structured: boolean, signal: AbortSignal
     body: JSON.stringify({
       model: openRouterModel(),
       temperature: 0.2,
-      max_tokens: 6000,
+      max_tokens: 5000,
+      usage: { include: true },
+      reasoning: reasoningEffort() === "none" ? { enabled: false } : { effort: reasoningEffort(), exclude: true },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content },
       ],
       ...(structured && {
         response_format: { type: "json_schema", json_schema: { name: "kookstappen", strict: true, schema: RECIPE_SCHEMA } },
+        // Alleen providers die het schema echt afdwingen.
+        provider: { require_parameters: true },
       }),
     }),
   });
@@ -45,15 +53,23 @@ async function call(content: Content[], structured: boolean, signal: AbortSignal
     const body = await res.text().catch(() => "");
     throw new UpstreamError(body.slice(0, 500) || res.statusText, res.status);
   }
-  const data = (await res.json()) as { choices?: { message?: { content?: string | null } }[]; error?: { message?: string } };
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string | null } }[];
+    error?: { message?: string };
+    usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number; completion_tokens_details?: { reasoning_tokens?: number } };
+  };
+  if (data.usage) {
+    const u = data.usage;
+    console.info(`OpenRouter ${openRouterModel()}: ${u.prompt_tokens} in, ${u.completion_tokens} uit (${u.completion_tokens_details?.reasoning_tokens ?? 0} reasoning), $${u.cost ?? "?"}`);
+  }
   if (data.error) throw new UpstreamError(data.error.message ?? "Onbekende fout", 502);
   const text = data.choices?.[0]?.message?.content;
   if (!text) throw new UpstreamError("Leeg antwoord van het model", 502);
   return text;
 }
 
-/** Stuurt foto's en/of tekst naar het model en geeft de ruwe tekst (JSON) terug. */
-export async function extractSteps(images: string[], text: string, signal: AbortSignal) {
+/** Stuurt foto's en/of tekst naar het model en geeft het geparste JSON-object terug. */
+export async function extractSteps(images: string[], text: string, signal: AbortSignal): Promise<unknown> {
   const content: Content[] = [
     {
       type: "text",
@@ -63,11 +79,25 @@ export async function extractSteps(images: string[], text: string, signal: Abort
     },
     ...images.map((url): Content => ({ type: "image_url", image_url: { url } })),
   ];
-  try {
-    return await call(content, true, signal);
-  } catch (err) {
-    // Niet elk model ondersteunt json_schema; probeer dan zonder (de prompt vraagt ook om JSON).
-    if (err instanceof UpstreamError && err.status === 400) return call(content, false, signal);
-    throw err;
+  let structured = true;
+  for (let attempt = 1; ; attempt++) {
+    let reply: string;
+    try {
+      reply = await call(content, structured, signal);
+    } catch (err) {
+      // Model/provider zonder json_schema-ondersteuning: opnieuw zonder (de prompt vraagt ook om JSON).
+      if (structured && err instanceof UpstreamError && (err.status === 400 || err.status === 404)) {
+        structured = false;
+        continue;
+      }
+      throw err;
+    }
+    try {
+      return extractJson(reply);
+    } catch (err) {
+      // Soms levert een model kapotte JSON; één keer opnieuw proberen lost dat meestal op.
+      if (attempt >= 2) throw err;
+      console.warn("Onleesbare JSON van model, opnieuw proberen:", (err as Error).message);
+    }
   }
 }

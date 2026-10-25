@@ -1,10 +1,10 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
-import { extractJson, normalizeRecipe } from "@/lib/normalize";
+import { normalizeRecipe } from "@/lib/normalize";
 import { extractSteps, openRouterConfigured, openRouterModel, UpstreamError } from "@/lib/openrouter";
 import type { StatusResponse, StepsResponse } from "@/lib/types";
 
-// Vision-modellen hebben soms 20-40 s nodig voor een volle verpakking.
-export const maxDuration = 60;
+// Vision-modellen hebben soms 20-40 s nodig voor een volle verpakking, plus eventueel één nieuwe poging.
+export const maxDuration = 120;
 
 const MAX_IMAGES = 4;
 const MAX_IMAGE_CHARS = 3_000_000; // ~2,2 MB per foto na base64
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   if (!images.length && !text) return json({ code: "bad-input", error: "Voeg een foto of tekst toe." }, 400);
 
   try {
-    const raw = extractJson(await extractSteps(images, text, AbortSignal.any([req.signal, AbortSignal.timeout(55_000)])));
+    const raw = await extractSteps(images, text, AbortSignal.any([req.signal, AbortSignal.timeout(110_000)]));
     const recipe = normalizeRecipe(raw, randomUUID(), Date.now());
     if (!recipe.steps.length) {
       const problem = typeof (raw as { problem?: unknown }).problem === "string" ? (raw as { problem: string }).problem : "";

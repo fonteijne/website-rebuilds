@@ -38,11 +38,12 @@ Op een telefoon in hetzelfde wifi-netwerk: `npm run dev -- -H 0.0.0.0`, en open 
 | --- | --- | --- |
 | `OPENROUTER_API_KEY` | ja | Key van <https://openrouter.ai/keys>. Zonder key toont de app een melding, en werkt alleen het voorbeeld. |
 | `OPENROUTER_MODEL` | nee | Standaard `google/gemini-3.8-flash` (snel, goedkoop, leest tekst op foto's goed). Elk OpenRouter-model dat afbeeldingen accepteert werkt, bijv. `anthropic/claude-haiku-5.5` of `openai/gpt-6-luna`. Ondersteunt het model geen `json_schema`, dan probeert de route het automatisch opnieuw zonder. |
+| `OPENROUTER_REASONING` | nee | Hoeveel het model "nadenkt": `none`, `low` (standaard), `medium` of `high`. Getest met de wraps-foto: `low` duurt ~16 s en kost ~1 cent, de standaardinstelling van het model ~33 s en ~2 cent, bij vergelijkbare stappen. |
 | `ACCESS_CODE` | nee | Aanrader als de site openbaar staat. Wie de app gebruikt, moet dan eenmalig deze code invullen (die wordt lokaal bewaard). Zo gebruikt niet iedereen met de link jouw OpenRouter-tegoed. |
 | `SITE_URL` | nee | Wordt als `HTTP-Referer` meegestuurd, zodat de app herkenbaar is in je OpenRouter-dashboard. |
 | `OPENROUTER_BASE_URL` | nee | Alleen voor tests of een proxy (standaard `https://openrouter.ai/api/v1`). |
 
-Tip: zet in OpenRouter een kredietlimiet op de key. Eén foto kost met het standaardmodel ruim minder dan een cent.
+Tip: zet in OpenRouter een kredietlimiet op de key. Eén foto kost met het standaardmodel ongeveer 1 cent (~2000 tokens in, ~2200 uit). OpenRouter reserveert per verzoek tegoed voor `max_tokens` (5000), dus houd minimaal ~3 cent saldo op het account. Anders weigert OpenRouter het verzoek (402) en meldt de app dat het tegoed op is. Het tokengebruik en de kosten per aanroep staan in de serverlogs (`OpenRouter <model>: … in, … uit, $…`).
 
 ## Structuur
 
@@ -69,7 +70,7 @@ lib/
 ## Vercel
 
 - Nieuw project met Root Directory `kookstappen` en preset Next.js.
-- Env vars: `OPENROUTER_API_KEY` (en eventueel `ACCESS_CODE`, `OPENROUTER_MODEL`).
+- Env vars: `OPENROUTER_API_KEY` (en eventueel `ACCESS_CODE`, `OPENROUTER_MODEL`, `OPENROUTER_REASONING`).
 - `vercel.json` stuurt de headers `X-Robots-Tag: noindex, nofollow` en `Referrer-Policy: no-referrer` mee. Het is een persoonlijke tool, geen site om in Google te vinden.
-- `/api/steps` heeft `maxDuration = 60`, omdat vision-modellen soms 20 tot 40 seconden nodig hebben.
+- `/api/steps` heeft `maxDuration = 120`: vision-modellen hebben soms 20 tot 40 seconden nodig, en bij kapotte JSON probeert de route het één keer opnieuw.
 - Foto's worden in de browser verkleind tot zo'n 0,5 tot 1 MB per stuk, met maximaal 4 foto's. Zo blijft het verzoek onder de bodylimiet van 4,5 MB voor Vercel Functions.

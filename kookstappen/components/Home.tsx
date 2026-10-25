@@ -94,7 +94,7 @@ export default function Home(p: Props) {
           <Spinner className="spin size-10 text-accent" />
           <div>
             <p className="text-xl font-bold">Ik lees de instructies…</p>
-            <p className="mt-1 text-ink2">Dit duurt meestal 10 tot 30 seconden.</p>
+            <p className="mt-1 text-ink2">Dit duurt meestal 15 tot 30 seconden.</p>
           </div>
           <button type="button" onClick={p.onCancel} className={secondary}>
             Annuleer
