@@ -70,7 +70,7 @@ lib/
 ## Vercel
 
 - Project `kookstappen` in team KERS (<https://kookstappen.vercel.app>), gekoppeld aan deze repo met Root Directory `kookstappen` en preset Next.js.
-- **Afgeschermd met Vercel Authentication voor alle deployments** (`ssoProtection: all`): alleen wie met een Vercel-account in team KERS is ingelogd kan de app en de API openen. Daardoor is `ACCESS_CODE` niet nodig.
+- **Openbaar** (geen Vercel Authentication). Iedereen met de link kan de app gebruiken, en dus ook het OpenRouter-tegoed. De key heeft daarom een limiet van $1. Zet `ACCESS_CODE` als je dat later wilt afschermen.
 - Env vars: `OPENROUTER_API_KEY` (sensitive, production + preview). Optioneel: `OPENROUTER_MODEL`, `OPENROUTER_REASONING`, `ACCESS_CODE`.
 - Ignored Build Step: `git diff --quiet HEAD^ HEAD -- .`, zodat pushes voor andere sites geen build van deze app starten.
 - `vercel.json` stuurt de headers `X-Robots-Tag: noindex, nofollow` en `Referrer-Policy: no-referrer` mee. Het is een persoonlijke tool, geen site om in Google te vinden.
