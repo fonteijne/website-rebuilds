@@ -69,8 +69,10 @@ lib/
 
 ## Vercel
 
-- Nieuw project met Root Directory `kookstappen` en preset Next.js.
-- Env vars: `OPENROUTER_API_KEY` (en eventueel `ACCESS_CODE`, `OPENROUTER_MODEL`, `OPENROUTER_REASONING`).
+- Project `kookstappen` in team KERS (<https://kookstappen.vercel.app>), gekoppeld aan deze repo met Root Directory `kookstappen` en preset Next.js.
+- **Afgeschermd met Vercel Authentication voor alle deployments** (`ssoProtection: all`): alleen wie met een Vercel-account in team KERS is ingelogd kan de app en de API openen. Daardoor is `ACCESS_CODE` niet nodig.
+- Env vars: `OPENROUTER_API_KEY` (sensitive, production + preview). Optioneel: `OPENROUTER_MODEL`, `OPENROUTER_REASONING`, `ACCESS_CODE`.
+- Ignored Build Step: `git diff --quiet HEAD^ HEAD -- .`, zodat pushes voor andere sites geen build van deze app starten.
 - `vercel.json` stuurt de headers `X-Robots-Tag: noindex, nofollow` en `Referrer-Policy: no-referrer` mee. Het is een persoonlijke tool, geen site om in Google te vinden.
 - `/api/steps` heeft `maxDuration = 120`: vision-modellen hebben soms 20 tot 40 seconden nodig, en bij kapotte JSON probeert de route het één keer opnieuw.
 - Foto's worden in de browser verkleind tot zo'n 0,5 tot 1 MB per stuk, met maximaal 4 foto's. Zo blijft het verzoek onder de bodylimiet van 4,5 MB voor Vercel Functions.
