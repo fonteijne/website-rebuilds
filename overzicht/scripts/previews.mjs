@@ -1,18 +1,31 @@
 // Maakt previews van alle publieke sites: public/previews/<slug>.webp (960x600).
-// Gebruik: npm run previews            (alle sites)
-//          npm run previews -- knmi    (alleen de genoemde slugs)
+// Gebruik: npm run previews              (alle sites)
+//          npm run previews -- knmi      (alleen de genoemde slugs)
+//          npm run previews -- --missing (alleen sites zonder preview)
 // Screenshots met prefers-reduced-motion, zodat intro-animaties al klaar zijn.
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { sites } from "../src/content/sites.ts";
+import sites from "../src/content/sites.json" with { type: "json" };
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 const outDir = fileURLToPath(new URL("../public/previews/", import.meta.url));
-const only = process.argv.slice(2);
-const todo = sites.filter((s) => !s.protected && (!only.length || only.includes(s.slug)));
+const args = process.argv.slice(2);
+const missing = args.includes("--missing");
+const only = args.filter((a) => !a.startsWith("--"));
+const todo = sites.filter(
+  (s) =>
+    !s.protected &&
+    (!only.length || only.includes(s.slug)) &&
+    (!missing || !existsSync(`${outDir}${s.slug}.webp`)),
+);
+if (!todo.length) {
+  console.log("geen previews te maken");
+  process.exit(0);
+}
 
 await mkdir(outDir, { recursive: true });
 const browser = await chromium.launch();
