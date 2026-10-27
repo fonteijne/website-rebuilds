@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-bg: #f4f1ea;
+  --color-surface: #fbfaf6;
+  --color-line: rgba(27, 26, 23, 0.12);
+  --color-ink: #1b1a17;
+  --color-mute: #6b675e;
+  --color-accent: #c9431f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #121110;
+    --color-surface: #1b1a18;
+    --color-line: rgba(244, 241, 234, 0.12);
+    --color-ink: #efebe2;
+    --color-mute: #9c978c;
+    --color-accent: #f0764f;
+  }
+}
+
+html {
+  color-scheme: light dark;
+  background: var(--color-bg);
+}
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tegels komen kort na elkaar binnen; alleen transform + opacity. */
+@media (prefers-reduced-motion: no-preference) {
+  .tile {
+    animation: tile-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+}
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}

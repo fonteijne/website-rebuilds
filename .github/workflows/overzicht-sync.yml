@@ -1,0 +1,81 @@
+# Houdt overzicht/ (de index van alle sites) bij: na elke geslaagde productie-deploy op Vercel
+# van een site uit deze repo, elke nacht als vangnet, en met de hand.
+#
+# Geen loop: de commit van deze workflow (met GITHUB_TOKEN) start zelf geen workflows. De
+# Vercel-deploys die erop volgen starten deze workflow wel opnieuw, maar die run vindt geen
+# nieuwe sites en maakt alleen ontbrekende previews, dus er valt niets te committen en het
+# stopt. Bestaande previews worden alleen ververst bij een handmatige run met "refresh".
+#
+# Nodig: repository secret VERCEL_TOKEN (Vercel > Account Settings > Tokens, scope team KERS).
+name: Overzicht bijwerken
+
+on:
+  deployment_status:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: "Alle previews opnieuw maken"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: overzicht-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Alleen geslaagde productie-deploys, en niet die van de index zelf.
+    if: >-
+      github.event_name != 'deployment_status' || (
+        github.event.deployment_status.state == 'success' &&
+        startsWith(github.event.deployment.environment, 'Production') &&
+        !endsWith(github.event.deployment.environment, 'overzicht')
+      )
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: overzicht
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sites ophalen uit Vercel
+        run: node scripts/sync.mjs
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Playwright installeren
+        run: |
+          npm i --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+
+      - name: Previews maken
+        run: node scripts/previews.mjs ${{ inputs.refresh && ' ' || '--missing' }}
+
+      - name: Build controleren
+        run: |
+          npm ci
+          npm run build
+
+      - name: Committen
+        run: |
+          git add src/content/sites.json public/previews
+          if git diff --cached --quiet; then
+            echo "Niets te committen"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Overzicht: sites en previews bijgewerkt"
+          git pull --rebase origin main
+          git push origin HEAD:main
