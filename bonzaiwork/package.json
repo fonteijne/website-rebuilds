@@ -1,0 +1,36 @@
+{
+  "name": "bonzaiwork",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "BonzaiWork: de all-in-one werkapp met AI, project first, bovenop de lokale OpenWork-server.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@tanstack/react-query": "^5.90.3",
+    "dompurify": "^3.4.17",
+    "lucide-react": "^0.577.0",
+    "marked": "^17.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.7.0",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.4",
+    "vitest": "^5.0.5"
+  }
+}
